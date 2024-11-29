@@ -1,6 +1,4 @@
 /**
- * Project Name: machine
- * Module Name: container
  * Filename: stack.h
  * Creator: Yaokai Liu
  * Create Date: 2024-10-27
