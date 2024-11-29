@@ -80,7 +80,7 @@ bool Array_all(const Array *array, bool (*fn_judgment)(void *)) {
 
 Array *Array_filter(const Array *origin_array, bool (*fn_judgment)(const void *)) {
   Array *filtered_array = Array_new(origin_array->ele_size, origin_array->allocator);
-  for (int i = 0; i < Array_length(origin_array); i++) {
+  for (uint32_t i = 0; i < Array_length(origin_array); i++) {
     const void *ele = Array_get(origin_array, i);
     if (fn_judgment(ele)) { Array_append(filtered_array, ele, 1); }
   }
@@ -89,7 +89,7 @@ Array *Array_filter(const Array *origin_array, bool (*fn_judgment)(const void *)
 
 Array *Array_deduplicate(const Array *origin_array, bool (*fn_equal)(const void *, const void *)) {
   Array *filtered_array = Array_new(origin_array->ele_size, origin_array->allocator);
-  for (int i = 0; i < Array_length(origin_array); i++) {
+  for (uint32_t i = 0; i < Array_length(origin_array); i++) {
     const void *ele1 = Array_get(origin_array, i);
     for (uint32_t j = 0; j < Array_length(filtered_array); j++) {
       const void *ele2 = Array_get(origin_array, j);
