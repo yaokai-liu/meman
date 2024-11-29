@@ -38,10 +38,11 @@ void Stack_clear(Stack *stack) {
 uint32_t Stack_push(Stack *stack, const void *data, uint32_t size) {
   if (!data || !size) { return 0; }
   if (stack->used + size >= stack->allocated) {
-    stack->allocated += ALLOC_LEN;
-    void *p = stack->allocator->realloc(stack->stack, stack->allocated);
+    uint32_t length = ((stack->used + size) / ALLOC_LEN + 1) * ALLOC_LEN;
+    void *p = stack->allocator->realloc(stack->stack, length);
     if (!p) { return -1; }
     stack->stack = p;
+    stack->allocated = length;
   }
   memcpy(stack->stack + stack->used, data, size);
   stack->used += size;
