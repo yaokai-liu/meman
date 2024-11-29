@@ -9,9 +9,6 @@
 #include <malloc.h>
 #include <string.h>
 
-const Allocator STDAllocator = {.malloc = malloc,
-                                .realloc = realloc,
-                                .calloc = calloc,
-                                .free = free,
-                                .memcpy = memcpy,
-                                .memset = memset};
+const Allocator STDAllocator = {
+  .malloc = malloc, .realloc = realloc, .calloc = calloc, .free = free, .memcpy = memcpy, .memset = memset
+};

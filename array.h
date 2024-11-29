@@ -36,8 +36,7 @@ bool Array_any(const struct Array *array, bool (*fn_judgment)(void *));
 bool Array_all(const struct Array *array, bool (*fn_judgment)(void *));
 
 // Suppose `_to` and `_from` both are not duplicated array.
-uint32_t Array_no_duplicated_concat(struct Array * restrict _to,
-                                    const struct Array * restrict _from);
+uint32_t Array_no_duplicated_concat(struct Array * restrict _to, const struct Array * restrict _from);
 // Filter an array by fn_judgment. The origin_array will not be clean and destroy.
 Array *Array_filter(const Array *origin_array, bool (*fn_judgment)(const void *));
 // Deduplicate an array by fn_equal. The origin_array will not be clean and destroy.
