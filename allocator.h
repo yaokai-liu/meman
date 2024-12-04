@@ -5,8 +5,8 @@
  * Copyright (c) 2024 Yaokai Liu. All rights reserved.
  **/
 
-#ifndef XIDE_ALLOCATOR_H
-#define XIDE_ALLOCATOR_H
+#ifndef LIU_ALLOCATOR_H
+#define LIU_ALLOCATOR_H
 
 #include <stddef.h>
 
@@ -26,4 +26,6 @@ typedef struct {
 
 extern const Allocator STDAllocator;
 
-#endif  // XIDE_ALLOCATOR_H
+typedef void destruct_t(void *, const Allocator *);
+
+#endif  // LIU_ALLOCATOR_H

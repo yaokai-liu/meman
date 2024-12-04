@@ -10,5 +10,10 @@
 #include <string.h>
 
 const Allocator STDAllocator = {
-  .malloc = malloc, .realloc = realloc, .calloc = calloc, .free = free, .memcpy = memcpy, .memset = memset
+  .malloc = malloc,
+  .realloc = realloc,
+  .calloc = calloc,
+  .free = free,
+  .memcpy = memcpy,
+  .memset = memset
 };
