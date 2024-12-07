@@ -28,6 +28,15 @@ inline Stack *Stack_new(const Allocator *allocator) {
   return stack;
 }
 
+inline uint32_t Stack_size(Stack *stack) {
+  return stack->used;
+}
+
+inline void *Stack_get(Stack *stack, uint32_t offset) {
+  if (offset >= stack->used) { return nullptr; }
+  return stack->stack + offset;
+}
+
 inline void Stack_clear(Stack *stack) {
   stack->allocator->free(stack->stack);
   stack->allocated = 0;

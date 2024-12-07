@@ -114,16 +114,12 @@ inline AVLNode *addAVLNode(AVLNode **root, const uint64_t key, const Allocator *
   if (left_height >= 2 + right_height) {
     const uint64_t llh = (*root)->left->left ? (*root)->left->left->height : 0;
     const uint64_t lrh = (*root)->left->right ? (*root)->left->right->height : 0;
-    if (llh < lrh) {
-      RR_rotate(&(*root)->left);
-    }
+    if (llh < lrh) { RR_rotate(&(*root)->left); }
     LL_rotate(root);
   } else if (right_height >= 2 + left_height) {
     const uint64_t rlh = (*root)->right->left ? (*root)->right->left->height : 0;
     const uint64_t rrh = (*root)->right->right ? (*root)->right->right->height : 0;
-    if (rlh > rrh) {
-      LL_rotate(&(*root)->right);
-    }
+    if (rlh > rrh) { LL_rotate(&(*root)->right); }
     RR_rotate(root);
   }
   left_height = (*root)->left ? (*root)->left->height + 1 : 0;

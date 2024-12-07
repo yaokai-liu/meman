@@ -64,7 +64,7 @@ void Trie_del(Trie *tree, const char *key, destruct_t *del_content) {
   TrieNode *trie_node = tree->root;
   if (!trie_node->children) { return; }
   for (int i = 0; key[i]; i++) {
-    TrieNode * node = AVLTree_get(trie_node->children, key[i]);
+    TrieNode *node = AVLTree_get(trie_node->children, key[i]);
     if (!node) { return; }
     trie_node = node;
   }
