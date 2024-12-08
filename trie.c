@@ -27,7 +27,7 @@ Trie *Trie_new(const Allocator *allocator) {
   TrieNode *node = allocator->calloc(1, sizeof(TrieNode));
   Trie *tree = allocator->calloc(1, sizeof(Trie));
   tree->allocator = allocator;
-  node->children = AVLTree_new(allocator);
+  node->children = AVLTree_new(allocator, nullptr);
   tree->root = node;
   return tree;
 }
@@ -51,7 +51,7 @@ void Trie_set(Trie *tree, const char *key, void *value) {
     auto node = (TrieNode *) AVLTree_get(trie_node->children, key[i]);
     if (!node) {
       node = tree->allocator->calloc(1, sizeof(TrieNode));
-      node->children = AVLTree_new(tree->allocator);
+      node->children = AVLTree_new(tree->allocator, nullptr);
       AVLTree_set(trie_node->children, key[i], node);
     }
     trie_node = node;

@@ -18,18 +18,20 @@ typedef struct AVLNode {
 
 typedef struct AVLTree {
   const Allocator *allocator;
+  compare_t *fn_cmp;
   AVLNode *root;
 } AVLTree;
 
-AVLNode *newAVLNode(const uint64_t key, const Allocator *allocator);
+AVLNode *AVLNode_new(const uint64_t key, AVLTree *tree);
 
-AVLNode *getAVLNode(AVLNode *root, uint64_t key);
-AVLNode *addAVLNode(AVLNode **root, const uint64_t key, const Allocator *allocator);
-void delAVLNode(AVLNode *root, destruct_t *del_content, const Allocator * const ptr);
+AVLNode *AVLNode_get(AVLNode *root, uint64_t key, const AVLTree *tree);
+AVLNode *AVLNode_add(AVLNode **root, const uint64_t key, AVLTree *tree);
+void AVLNode_del(AVLNode *root, destruct_t *del_content, AVLTree *tree);
 
-inline AVLTree *AVLTree_new(const Allocator *allocator) {
+inline AVLTree *AVLTree_new(const Allocator *allocator, compare_t *fn_compare) {
   AVLTree *tree = allocator->calloc(1, sizeof(AVLTree));
   tree->allocator = allocator;
+  tree->fn_cmp = fn_compare;
   return tree;
 }
 
@@ -39,40 +41,43 @@ inline uint64_t AVLTree_height(const AVLTree *tree) {
 
 inline void *AVLTree_get(const AVLTree *tree, uint64_t key) {
   if (!tree) { return nullptr; }
-  const AVLNode * const node = getAVLNode(tree->root, key);
+  const AVLNode * const node = AVLNode_get(tree->root, key, tree);
   return node ? node->value : nullptr;
 }
 
 inline int32_t AVLTree_set(AVLTree *tree, uint64_t key, void *value) {
   if (!tree) { return -1; }
-  AVLNode *node = addAVLNode(&tree->root, key, tree->allocator);
+  AVLNode *node = AVLNode_add(&tree->root, key, tree);
   return node ? (node->value = value, 0) : -1;
 }
 
-inline void delAVLNode(AVLNode *root, destruct_t *del_content, const Allocator * const allocator) {
+inline void AVLNode_del(AVLNode *root, destruct_t *del_content, AVLTree *tree) {
   if (!root) { return; }
-  if (root->left) { delAVLNode(root->left, del_content, allocator); }
-  if (root->right) { delAVLNode(root->right, del_content, allocator); }
-  if (del_content) { del_content(root->value, allocator); }
-  allocator->free(root);
+  if (root->left) { AVLNode_del(root->left, del_content, tree); }
+  if (root->right) { AVLNode_del(root->right, del_content, tree); }
+  if (del_content) { del_content(root->value, tree->allocator); }
+  tree->allocator->free(root);
 }
-inline void AVLTree_destroy(AVLTree *tree, void (*del_value)(void *, const Allocator *allocator)) {
+
+inline void AVLTree_destroy(AVLTree *tree, destruct_t *del_value) {
   if (!tree) { return; }
-  delAVLNode(tree->root, del_value, tree->allocator);
+  AVLNode_del(tree->root, del_value, tree);
   tree->allocator->free(tree);
 }
 
-inline AVLNode *newAVLNode(const uint64_t key, const Allocator *allocator) {
-  AVLNode *node = allocator->calloc(1, sizeof(AVLNode));
+inline AVLNode *AVLNode_new(const uint64_t key, AVLTree *tree) {
+  AVLNode *node = tree->allocator->calloc(1, sizeof(AVLNode));
   node->key = key;
   return node;
 }
 
-inline AVLNode *getAVLNode(AVLNode *root, const uint64_t key) {
+inline AVLNode *AVLNode_get(AVLNode *root, uint64_t key, const AVLTree *tree) {
   if (!root) { return nullptr; }
-  if (key == root->key) { return root; }
-  if (key < root->key) { return getAVLNode(root->left, key); }
-  return getAVLNode(root->right, key);
+  int32_t cmp =
+    tree->fn_cmp ? tree->fn_cmp((void *) key, (void *) root->key) : (int32_t) (key - root->key);
+  if (cmp > 0) { return AVLNode_get(root->right, key, tree); }
+  if (cmp < 0) { return AVLNode_get(root->left, key, tree); }
+  return root;
 }
 
 #define max(_a, _b) ((_a) > (_b) ? (_a) : (_b))
@@ -100,14 +105,22 @@ inline AVLNode *getAVLNode(AVLNode *root, const uint64_t key) {
       1 + max((*_pNode)->right ? (*_pNode)->right->height + 1 : 0, temp->height + 1); \
   } while (0)
 
-inline AVLNode *addAVLNode(AVLNode **root, const uint64_t key, const Allocator *allocator) {
+#define setNode(node)                                                                \
+  do {                                                                               \
+    int32_t cmp = tree->fn_cmp ? tree->fn_cmp((void *) key, (void *) (*root)->key) : \
+                                 (int32_t) (key - (*root)->key);                     \
+    if (cmp == 0) { return *root; }                                                  \
+    AVLNode **pNode = (cmp < 0) ? &((*root)->left) : &((*root)->right);              \
+    node = AVLNode_add(pNode, key, tree);                                            \
+  } while (false)
+
+inline AVLNode *AVLNode_add(AVLNode **root, const uint64_t key, AVLTree *tree) {
   if (!*root) {
-    *root = newAVLNode(key, allocator);
+    *root = AVLNode_new(key, tree);
     return *root;
   }
-  if (key == (*root)->key) { return *root; }
-  AVLNode **pNode = (key < (*root)->key) ? &((*root)->left) : &((*root)->right);
-  AVLNode *node = addAVLNode(pNode, key, allocator);
+  AVLNode *node;
+  setNode(node);
 
   uint64_t left_height = (*root)->left ? (*root)->left->height + 1 : 0;
   uint64_t right_height = (*root)->right ? (*root)->right->height + 1 : 0;

@@ -13,7 +13,9 @@
 
 typedef struct AVLTree AVLTree;
 
-AVLTree *AVLTree_new(const Allocator *allocator);
+typedef int32_t compare_t(void *, void *);
+
+AVLTree *AVLTree_new(const Allocator *allocator, compare_t(*fn_compare));
 void AVLTree_destroy(AVLTree *tree, destruct_t *del_value);
 
 uint64_t AVLTree_height(const AVLTree *tree);
