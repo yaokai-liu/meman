@@ -46,7 +46,7 @@ inline void *Array_get(const Array *array, uint32_t index) {
   return (char *) array->elements + array->ele_size * index;
 }
 
-uint32_t Array_append(Array *array, const void *elements, const uint32_t count) {
+inline uint32_t Array_append(Array *array, const void *elements, const uint32_t count) {
   if (array->used_len + count >= array->alloc_len) {
     uint32_t length = ((array->used_len + count) / ALLOC_LEN + 1) * ALLOC_LEN;
     void *p = array->allocator->realloc(array->elements, length * array->ele_size);
@@ -60,7 +60,7 @@ uint32_t Array_append(Array *array, const void *elements, const uint32_t count) 
   return count;
 }
 
-bool Array_any(const Array *array, bool (*fn_judgment)(void *)) {
+inline bool Array_any(const Array *array, bool (*fn_judgment)(void *)) {
   bool judge = false;
   for (uint32_t i = 0; i < array->used_len; i++) {
     void *element = (char *) array->elements + i * array->ele_size;
@@ -69,7 +69,7 @@ bool Array_any(const Array *array, bool (*fn_judgment)(void *)) {
   return judge;
 }
 
-bool Array_all(const Array *array, bool (*fn_judgment)(void *)) {
+inline bool Array_all(const Array *array, bool (*fn_judgment)(void *)) {
   bool judge = true;
   for (uint32_t i = 0; i < array->used_len; i++) {
     void *element = (char *) array->elements + i * array->ele_size;
@@ -78,7 +78,7 @@ bool Array_all(const Array *array, bool (*fn_judgment)(void *)) {
   return judge;
 }
 
-Array *Array_filter(const Array *origin_array, bool (*fn_judgment)(const void *)) {
+inline Array *Array_filter(const Array *origin_array, bool (*fn_judgment)(const void *)) {
   Array *filtered_array = Array_new(origin_array->ele_size, origin_array->allocator);
   for (uint32_t i = 0; i < Array_length(origin_array); i++) {
     const void *ele = Array_get(origin_array, i);
@@ -87,7 +87,7 @@ Array *Array_filter(const Array *origin_array, bool (*fn_judgment)(const void *)
   return filtered_array;
 }
 
-Array *Array_deduplicate(const Array *origin_array, bool (*fn_equal)(const void *, const void *)) {
+inline Array *Array_deduplicate(const Array *origin_array, bool (*fn_equal)(const void *, const void *)) {
   Array *filtered_array = Array_new(origin_array->ele_size, origin_array->allocator);
   for (uint32_t i = 0; i < Array_length(origin_array); i++) {
     const void *ele1 = Array_get(origin_array, i);
@@ -101,7 +101,7 @@ __deduplicate_find_duplicated:;
   return filtered_array;
 }
 
-uint32_t Array_clear(Array *array, void (*fn_free)(void *, const Allocator *)) {
+inline uint32_t Array_clear(Array *array, void (*fn_free)(void *, const Allocator *)) {
   if (fn_free) {
     for (uint32_t i = 0; i < array->used_len; i++) {
       void *ele = Array_get(array, i);
@@ -113,7 +113,7 @@ uint32_t Array_clear(Array *array, void (*fn_free)(void *, const Allocator *)) {
   return len;
 }
 
-uint32_t Array_reset(Array *array, void (*fn_free)(void *, const Allocator *)) {
+inline uint32_t Array_reset(Array *array, void (*fn_free)(void *, const Allocator *)) {
   Array_clear(array, fn_free);
   const uint32_t len = array->alloc_len;
   if (array->elements) { array->allocator->free(array->elements); }
@@ -123,6 +123,6 @@ uint32_t Array_reset(Array *array, void (*fn_free)(void *, const Allocator *)) {
   return len;
 }
 
-void Array_destroy(Array *array) {
+inline void Array_destroy(Array *array) {
   array->allocator->free(array);
 }
