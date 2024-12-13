@@ -105,7 +105,7 @@ inline bool Array_all(const Array *array, bool (*fn_judgment)(void *)) {
 }
 
 inline Array *Array_filter(const Array *origin_array, bool (*fn_judgment)(const void *)) {
-  Array *filtered_array = Array_new(origin_array->ele_size, 0, origin_array->allocator);
+  Array *filtered_array = Array_new(origin_array->ele_size, -1, origin_array->allocator);
   for (uint32_t i = 0; i < Array_length(origin_array); i++) {
     const void *ele = Array_real_addr(origin_array, i);
     if (fn_judgment(ele)) { Array_append(filtered_array, ele, 1); }
@@ -114,7 +114,7 @@ inline Array *Array_filter(const Array *origin_array, bool (*fn_judgment)(const 
 }
 
 inline Array *Array_deduplicate(const Array *origin_array, bool (*fn_equal)(const void *, const void *)) {
-  Array *filtered_array = Array_new(origin_array->ele_size, 0, origin_array->allocator);
+  Array *filtered_array = Array_new(origin_array->ele_size, -1, origin_array->allocator);
   for (uint32_t i = 0; i < Array_length(origin_array); i++) {
     const void *ele1 = Array_real_addr(origin_array, i);
     for (uint32_t j = 0; j < Array_length(filtered_array); j++) {
