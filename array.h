@@ -16,18 +16,26 @@
 typedef struct Array Array;
 extern const size_t sizeof_array;
 
-Array *Array_new(uint32_t ele_size, const Allocator *allocator);
+Array *Array_new(const uint32_t ele_size, const uint32_t id, const Allocator * const allocator);
 
 uint32_t Array_init(Array *array, uint32_t ele_size, const Allocator *allocator);
 
 uint32_t Array_length(const struct Array *array);
 
-// Note: append may change elements' address,
-// so it is not promised that two `Array_get` of one same `index` will return a
+// Note: append may change elements' real address,
+// so it is not promised that two `Array_real_addr` of one same `index` will return a
 // same address.
-void *Array_get(const struct Array *array, uint32_t index);
+void *Array_real_addr(const struct Array *array, uint32_t index);
+// Promised that elements' virtual address would not be changed in one array.
+void *Array_virt_addr(Array *array, uint32_t index);
+
+void *Array_real2virt(Array *array, void *real_addr);
+
+void *Array_vert2real(Array *array, void *vert_addr);
+
 uint32_t Array_append(struct Array *array, const void *elements, uint32_t count);
 
+uint32_t Array_concat(Array * restrict dest, Array * restrict src);
 // Promised that every element would be detected with `fn_judgment`.
 // So that for traversing elements.
 bool Array_any(const struct Array *array, bool (*fn_judgment)(void *));

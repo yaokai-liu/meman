@@ -11,6 +11,7 @@
 
 struct Array {
   const Allocator *allocator;
+  uint32_t array_id;
   uint32_t alloc_len;
   uint32_t ele_size;
   uint32_t used_len;
@@ -21,8 +22,9 @@ const size_t sizeof_array = sizeof(Array);
 
 #define ALLOC_LEN 32
 
-Array *Array_new(const uint32_t ele_size, const Allocator * const allocator) {
+Array *Array_new(const uint32_t ele_size, const uint32_t id, const Allocator * const allocator) {
   if (ele_size == 0) { return nullptr; }
+  if (id == 0) { return nullptr; }
   Array *array = allocator->calloc(1, sizeof(struct Array));
   Array_init(array, ele_size, allocator);
   return array;
@@ -41,9 +43,29 @@ inline uint32_t Array_length(const Array *array) {
   return array->used_len;
 }
 
-inline void *Array_get(const Array *array, uint32_t index) {
+inline void *Array_real_addr(const Array *array, uint32_t index) {
   if (index >= array->used_len) { return nullptr; }
   return (char *) array->elements + array->ele_size * index;
+}
+
+inline void *Array_virt_addr(Array *array, uint32_t index) {
+  if (index >= array->used_len) { return nullptr; }
+  uint64_t id = ((uint64_t) array->array_id) << 32;
+  return (void *) (id | index);
+}
+
+inline void *Array_real2virt(Array *array, void * real_addr) {
+  uint64_t offset = real_addr - array->elements;
+  if (offset % array->ele_size) { return nullptr; }
+  uint64_t index = offset / array->ele_size;
+  return Array_virt_addr(array, index);
+}
+
+inline void *Array_vert2real(Array *array, void * vert_addr) {
+  uint32_t id = ((uint64_t) vert_addr) >> 32;
+  if (id != array->array_id) { return nullptr; }
+  uint32_t index = ((uint64_t) vert_addr) | 0xFFFF'FFFF;
+  return Array_real_addr(array, index);
 }
 
 inline uint32_t Array_append(Array *array, const void *elements, const uint32_t count) {
@@ -58,6 +80,10 @@ inline uint32_t Array_append(Array *array, const void *elements, const uint32_t 
   array->allocator->memcpy(dest, elements, count * array->ele_size);
   array->used_len += count;
   return count;
+}
+
+inline uint32_t Array_concat(Array * restrict dest, Array * restrict src) {
+  return Array_append(dest, src->elements, src->used_len);
 }
 
 inline bool Array_any(const Array *array, bool (*fn_judgment)(void *)) {
@@ -79,20 +105,20 @@ inline bool Array_all(const Array *array, bool (*fn_judgment)(void *)) {
 }
 
 inline Array *Array_filter(const Array *origin_array, bool (*fn_judgment)(const void *)) {
-  Array *filtered_array = Array_new(origin_array->ele_size, origin_array->allocator);
+  Array *filtered_array = Array_new(origin_array->ele_size, 0, origin_array->allocator);
   for (uint32_t i = 0; i < Array_length(origin_array); i++) {
-    const void *ele = Array_get(origin_array, i);
+    const void *ele = Array_real_addr(origin_array, i);
     if (fn_judgment(ele)) { Array_append(filtered_array, ele, 1); }
   }
   return filtered_array;
 }
 
 inline Array *Array_deduplicate(const Array *origin_array, bool (*fn_equal)(const void *, const void *)) {
-  Array *filtered_array = Array_new(origin_array->ele_size, origin_array->allocator);
+  Array *filtered_array = Array_new(origin_array->ele_size, 0, origin_array->allocator);
   for (uint32_t i = 0; i < Array_length(origin_array); i++) {
-    const void *ele1 = Array_get(origin_array, i);
+    const void *ele1 = Array_real_addr(origin_array, i);
     for (uint32_t j = 0; j < Array_length(filtered_array); j++) {
-      const void *ele2 = Array_get(origin_array, j);
+      const void *ele2 = Array_real_addr(origin_array, j);
       if (fn_equal(ele1, ele2)) { goto __deduplicate_find_duplicated; }
     }
     Array_append(filtered_array, ele1, 1);
@@ -104,7 +130,7 @@ __deduplicate_find_duplicated:;
 inline uint32_t Array_clear(Array *array, void (*fn_free)(void *, const Allocator *)) {
   if (fn_free) {
     for (uint32_t i = 0; i < array->used_len; i++) {
-      void *ele = Array_get(array, i);
+      void *ele = Array_real_addr(array, i);
       fn_free(ele, array->allocator);
     }
   }
