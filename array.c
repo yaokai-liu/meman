@@ -27,6 +27,7 @@ Array *Array_new(const uint32_t ele_size, const uint32_t id, const Allocator * c
   if (id == 0) { return nullptr; }
   Array *array = allocator->calloc(1, sizeof(struct Array));
   Array_init(array, ele_size, allocator);
+  array->array_id = id;
   return array;
 }
 
