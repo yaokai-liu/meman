@@ -55,14 +55,14 @@ inline void *Array_virt_addr(Array *array, uint32_t index) {
   return (void *) (id | index);
 }
 
-inline void *Array_real2virt(Array *array, void * real_addr) {
+inline void *Array_real2virt(Array *array, void *real_addr) {
   uint64_t offset = real_addr - array->elements;
   if (offset % array->ele_size) { return nullptr; }
   uint64_t index = offset / array->ele_size;
   return Array_virt_addr(array, index);
 }
 
-inline void *Array_vert2real(Array *array, void * vert_addr) {
+inline void *Array_vert2real(Array *array, void *vert_addr) {
   uint32_t id = ((uint64_t) vert_addr) >> 32;
   if (id != array->array_id) { return nullptr; }
   uint32_t index = ((uint64_t) vert_addr) | 0xFFFF'FFFF;
@@ -114,7 +114,8 @@ inline Array *Array_filter(const Array *origin_array, bool (*fn_judgment)(const 
   return filtered_array;
 }
 
-inline Array *Array_deduplicate(const Array *origin_array, bool (*fn_equal)(const void *, const void *)) {
+inline Array *
+  Array_deduplicate(const Array *origin_array, bool (*fn_equal)(const void *, const void *)) {
   Array *filtered_array = Array_new(origin_array->ele_size, -1, origin_array->allocator);
   for (uint32_t i = 0; i < Array_length(origin_array); i++) {
     const void *ele1 = Array_real_addr(origin_array, i);
