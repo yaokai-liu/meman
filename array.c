@@ -70,6 +70,7 @@ inline void *Array_vert2real(Array *array, void *vert_addr) {
 }
 
 inline uint32_t Array_append(Array *array, const void *elements, const uint32_t count) {
+  if (count == 0) { return 0; }
   if (array->used_len + count >= array->alloc_len) {
     uint32_t length = ((array->used_len + count) / ALLOC_LEN + 1) * ALLOC_LEN;
     void *p = array->allocator->realloc(array->elements, length * array->ele_size);

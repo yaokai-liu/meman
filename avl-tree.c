@@ -6,6 +6,7 @@
  **/
 
 #include "avl-tree.h"
+#include "traversal.h"
 
 typedef struct AVLNode AVLNode;
 typedef struct AVLNode {
@@ -27,6 +28,7 @@ AVLNode *AVLNode_new(const uint64_t key, AVLTree *tree);
 AVLNode *AVLNode_get(AVLNode *root, uint64_t key, const AVLTree *tree);
 AVLNode *AVLNode_add(AVLNode **root, const uint64_t key, AVLTree *tree);
 void AVLNode_del(AVLNode *root, destruct_t *del_content, AVLTree *tree);
+void AVLNode_inorder_traversal(AVLNode *node, Array *pair_array);
 
 inline AVLTree *AVLTree_new(const Allocator *allocator, compare_t *fn_compare) {
   AVLTree *tree = allocator->calloc(1, sizeof(AVLTree));
@@ -51,12 +53,12 @@ inline int32_t AVLTree_set(AVLTree *tree, uint64_t key, void *value) {
   return node ? (node->value = value, 0) : -1;
 }
 
-inline void AVLNode_del(AVLNode *root, destruct_t *del_content, AVLTree *tree) {
-  if (!root) { return; }
-  if (root->left) { AVLNode_del(root->left, del_content, tree); }
-  if (root->right) { AVLNode_del(root->right, del_content, tree); }
-  if (del_content) { del_content(root->value, tree->allocator); }
-  tree->allocator->free(root);
+inline Array /*<AVLPair>*/ *
+  AVLTree_inorder_traversal(AVLTree *tree, uint32_t id, const Allocator *allocator) {
+  if (!tree) { return nullptr; }
+  Array *pair_array = Array_new(sizeof(AVLPair), id, allocator);
+  AVLNode_inorder_traversal(tree->root, pair_array);
+  return pair_array;
 }
 
 inline void AVLTree_destroy(AVLTree *tree, destruct_t *del_value) {
@@ -65,10 +67,26 @@ inline void AVLTree_destroy(AVLTree *tree, destruct_t *del_value) {
   tree->allocator->free(tree);
 }
 
+inline void AVLNode_del(AVLNode *root, destruct_t *del_content, AVLTree *tree) {
+  if (!root) { return; }
+  if (root->left) { AVLNode_del(root->left, del_content, tree); }
+  if (root->right) { AVLNode_del(root->right, del_content, tree); }
+  if (del_content) { del_content(root->value, tree->allocator); }
+  tree->allocator->free(root);
+}
+
 inline AVLNode *AVLNode_new(const uint64_t key, AVLTree *tree) {
   AVLNode *node = tree->allocator->calloc(1, sizeof(AVLNode));
   node->key = key;
   return node;
+}
+
+inline void AVLNode_inorder_traversal(AVLNode *node, Array *pair_array) {
+  if (!node) { return; }
+  if (node->left) { AVLNode_inorder_traversal(node->left, pair_array); }
+  AVLPair pair = {.key = node->key, .value = node->value};
+  Array_append(pair_array, &pair, 1);
+  if (node->right) { AVLNode_inorder_traversal(node->right, pair_array); }
 }
 
 inline AVLNode *AVLNode_get(AVLNode *root, uint64_t key, const AVLTree *tree) {
