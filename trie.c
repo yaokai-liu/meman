@@ -86,25 +86,25 @@ void TrieNode_dump(
   Array *child_array = AVLTree_inorder_traversal(node->children, -1, allocator);
   const uint32_t count = Array_length(child_array);
   if (count == 0) {
-    struct TrieNodeItem node_item = {.offset = 0, .count = 0, .value = node->value};
+    TrieNodeItem node_item = {.offset = 0, .count = 0, .value = node->value};
     Array_append(node_array, &node_item, 1);
     releasePrimeArray(child_array);
     return;
   }
-  Array *temp_key_array = Array_new(sizeof(struct TrieNodeItem), -1, allocator);
+  Array *temp_key_array = Array_new(sizeof(TrieNodeItem), -1, allocator);
   const AVLPair * const children = Array_real_addr(child_array, 0);
   for (uint32_t i = 0; i < count; i++) {
     const TrieNode *child = children[i].value;
     TrieNode_dump(child, key_array, node_array, allocator);
     const uint64_t key = children[i].key;
     const uint32_t jump_node_offset = Array_length(node_array) - 1;
-    struct TrieKeyItem key_item = {.key = key, .next_node = jump_node_offset};
+    TrieKeyItem key_item = {.key = key, .next_node = jump_node_offset};
     Array_append(temp_key_array, &key_item, 1);
   }
   const uint32_t jump_key_offset = Array_length(key_array);
-  const struct TrieKeyItem *items = Array_real_addr(temp_key_array, 0);
+  const TrieKeyItem *items = Array_real_addr(temp_key_array, 0);
   Array_append(key_array, items, count);
-  struct TrieNodeItem node_item = {.offset = jump_key_offset, .count = count, .value = node->value};
+  TrieNodeItem node_item = {.offset = jump_key_offset, .count = count, .value = node->value};
   Array_append(node_array, &node_item, 1);
   releasePrimeArray(temp_key_array);
   releasePrimeArray(child_array);

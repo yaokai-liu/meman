@@ -13,16 +13,16 @@
 #include "array.h"
 #include "trie.h"
 
-struct TrieKeyItem {
+typedef struct {
   uint64_t key;
   uint64_t next_node;
-};
+} TrieKeyItem;
 
-struct TrieNodeItem {
+typedef struct {
   uint32_t offset;
   uint32_t count;
   void *value;
-};
+} TrieNodeItem;
 
 void Trie_dump(
   Trie *trie, Array /*<TrieKeyMappingItem>*/ *key_array, Array /*<TrieNodeItem>*/ *node_array
