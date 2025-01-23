@@ -102,8 +102,7 @@ void TrieNode_dump(
     Array_append(temp_key_array, &key_item, 1);
   }
   const uint32_t jump_key_offset = Array_length(key_array);
-  const TrieKeyItem *items = Array_real_addr(temp_key_array, 0);
-  Array_append(key_array, items, count);
+  Array_concat(key_array, temp_key_array);
   TrieNodeItem node_item = {.offset = jump_key_offset, .count = count, .value = node->value};
   Array_append(node_array, &node_item, 1);
   releasePrimeArray(temp_key_array);
