@@ -49,20 +49,20 @@ inline void *Array_real_addr(const Array *array, uint32_t index) {
   return (char *) array->elements + array->ele_size * index;
 }
 
-inline void *Array_virt_addr(Array *array, uint32_t index) {
+inline void *Array_virt_addr(const Array *array, uint32_t index) {
   if (index >= array->used_len) { return nullptr; }
   uint64_t id = ((uint64_t) array->array_id) << 32;
   return (void *) (id | index);
 }
 
-inline void *Array_real2virt(Array *array, void *real_addr) {
+inline void *Array_real2virt(const Array *array, void *real_addr) {
   uint64_t offset = real_addr - array->elements;
   if (offset % array->ele_size) { return nullptr; }
   uint64_t index = offset / array->ele_size;
   return Array_virt_addr(array, index);
 }
 
-inline void *Array_vert2real(Array *array, void *vert_addr) {
+inline void *Array_vert2real(const Array *array, void *vert_addr) {
   uint32_t id = ((uint64_t) vert_addr) >> 32;
   if (id != array->array_id) { return nullptr; }
   uint32_t index = ((uint64_t) vert_addr) & 0xFFFF'FFFF;
