@@ -16,7 +16,7 @@
 typedef struct Array Array;
 extern const size_t sizeof_array;
 
-Array *Array_new(const uint32_t ele_size, const uint32_t id, const Allocator * const allocator);
+Array *Array_new(uint32_t ele_size, uint32_t id, const Allocator * allocator);
 
 uint32_t Array_init(Array *array, uint32_t ele_size, const Allocator *allocator);
 
@@ -29,9 +29,16 @@ void *Array_real_addr(const struct Array *array, uint32_t index);
 // Promised that elements' virtual address would not be changed in one array.
 void *Array_virt_addr(const Array *array, uint32_t index);
 
-void *Array_real2virt(const Array *array, void *real_addr);
+#define Array_first_real(_Array) Array_real_addr(_Array, 0)
+#define Array_first_virt(_Array) Array_virt_addr(_Array, 0)
 
-void *Array_vert2real(const Array *array, void *vert_addr);
+void *Array_last_real(const Array *array);
+
+void *Array_last_virt(const Array *array);
+
+void *Array_real2virt(const Array *array, const void *real_addr);
+
+void *Array_vert2real(const Array *array, const void *vert_addr);
 
 uint32_t Array_append(struct Array *array, const void *elements, uint32_t count);
 
