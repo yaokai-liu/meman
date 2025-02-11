@@ -16,7 +16,7 @@
 typedef struct Array Array;
 extern const size_t sizeof_array;
 
-Array *Array_new(uint32_t ele_size, uint32_t id, const Allocator * allocator);
+Array *Array_new(uint32_t ele_size, uint32_t id, const Allocator *allocator);
 
 uint32_t Array_init(Array *array, uint32_t ele_size, const Allocator *allocator);
 
