@@ -1,6 +1,4 @@
 /**
- * Project Name: machine
- * Module Name: meman
  * Filename: trie-dump.h
  * Creator: Yaokai Liu
  * Create Date: 2025-01-21
