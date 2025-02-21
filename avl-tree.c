@@ -6,7 +6,7 @@
  **/
 
 #include "avl-tree.h"
-#include "traversal.h"
+#include "avl-traversal.h"
 
 typedef struct AVLNode AVLNode;
 typedef struct AVLNode {

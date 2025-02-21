@@ -8,7 +8,7 @@
 #include "trie.h"
 #include "array.h"
 #include "avl-tree.h"
-#include "traversal.h"
+#include "avl-traversal.h"
 #include "trie-dump.h"
 
 typedef struct TrieNode TrieNode;
