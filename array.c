@@ -56,10 +56,12 @@ inline void *Array_virt_addr(const Array *array, uint32_t index) {
 }
 
 inline void *Array_last_real(const Array *array) {
+  if (!array->used_len) { return nullptr; }
   return (void *) array->elements + array->ele_size * (array->used_len - 1);
 }
 
 inline void *Array_last_virt(const Array *array) {
+  if (!array->used_len) { return nullptr; }
   uint64_t id = ((uint64_t) array->array_id) << 32;
   return (void *) (id | (array->used_len - 1));
 }
