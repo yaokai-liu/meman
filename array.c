@@ -95,6 +95,28 @@ inline uint32_t Array_append(Array *array, const void *elements, const uint32_t 
   return count;
 }
 
+uint32_t Array_insert(struct Array *array, uint32_t index, const void *elements, uint32_t count) {
+  if (count == 0) { return 0; }
+  uint32_t n_move = array->used_len - index;
+  if (n_move == 0) { return Array_append(array, elements, count); }
+  if (array->used_len + count >= array->alloc_len) {
+    uint32_t length = ((array->used_len + count) / ALLOC_LEN + 1) * ALLOC_LEN;
+    void *p = array->allocator->realloc(array->elements, length * array->ele_size);
+    if (!p) { return -1; }
+    array->elements = p;
+    array->alloc_len = length;
+  }
+  void *dest = (char *) array->elements + array->ele_size * index;
+  void * const buffer = array->allocator->malloc(array->ele_size * n_move);
+  array->allocator->memcpy(buffer, dest, n_move * array->ele_size);
+  array->allocator->memcpy(dest, elements, count * array->ele_size);
+  dest = (char *) array->elements + array->ele_size * (index + count);
+  array->allocator->memcpy(dest, buffer, n_move * array->ele_size);
+  array->allocator->free(buffer);
+  array->used_len += count;
+  return count;
+}
+
 inline uint32_t Array_concat(Array * restrict dest, Array * restrict src) {
   return Array_append(dest, src->elements, src->used_len);
 }
