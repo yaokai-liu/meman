@@ -72,5 +72,5 @@ inline uint32_t Stack_top(Stack *stack, void *dest, uint32_t size) {
 }
 
 inline bool Stack_empty(Stack *stack) {
-  return !(stack->used > 0);
+  return stack->used <= 0;
 }
