@@ -21,14 +21,14 @@ typedef struct TrieNode {
 typedef struct Trie {
   const Allocator *allocator;
   uint32_t key_size;
-  uint64_t (*fn_key)(const void *);
+  fn_key_t *fn_key;
   uint64_t count;
   TrieNode *root;
 } Trie;
 
 void delTrieNode(TrieNode *trie_node, const Allocator *allocator);
 
-Trie *Trie_new(uint32_t key_size, uint64_t (*fn_key)(const void *), const Allocator *allocator) {
+Trie *Trie_new(uint32_t key_size, fn_key_t *fn_key, const Allocator *allocator) {
   if (!key_size || !fn_key) { return nullptr; }
   TrieNode *node = allocator->calloc(1, sizeof(TrieNode));
   Trie *tree = allocator->calloc(1, sizeof(Trie));

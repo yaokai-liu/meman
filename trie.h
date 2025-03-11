@@ -13,6 +13,8 @@
 
 typedef struct Trie Trie;
 
+typedef uint64_t fn_key_t(const void *);
+
 Trie *Trie_new(uint32_t key_size, uint64_t (*fn_key)(const void *), const Allocator *allocator);
 void Trie_destroy(Trie *tree);
 
