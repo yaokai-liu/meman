@@ -73,7 +73,7 @@ inline void *Array_real2virt(const Array *array, const void *real_addr) {
   return Array_virt_addr(array, index);
 }
 
-inline void *Array_vert2real(const Array *array, const void *vert_addr) {
+inline void *Array_virt2real(const Array *array, const void *vert_addr) {
   uint32_t id = ((uint64_t) vert_addr) >> 32;
   if (id != array->array_id) { return nullptr; }
   uint32_t index = ((uint64_t) vert_addr) & 0xFFFF'FFFF;

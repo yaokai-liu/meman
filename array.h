@@ -38,7 +38,7 @@ void *Array_last_virt(const Array *array);
 
 void *Array_real2virt(const Array *array, const void *real_addr);
 
-void *Array_vert2real(const Array *array, const void *vert_addr);
+void *Array_virt2real(const Array *array, const void *vert_addr);
 
 uint32_t Array_append(struct Array *array, const void *elements, uint32_t count);
 
