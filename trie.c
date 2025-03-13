@@ -28,7 +28,7 @@ typedef struct Trie {
 
 void delTrieNode(TrieNode *trie_node, const Allocator *allocator);
 
-Trie *Trie_new(uint32_t key_size, fn_key_t *fn_key, const Allocator *allocator) {
+Trie *Trie_new(const uint32_t key_size, fn_key_t *fn_key, const Allocator *allocator) {
   if (!key_size || !fn_key) { return nullptr; }
   TrieNode *node = allocator->calloc(1, sizeof(TrieNode));
   Trie *tree = allocator->calloc(1, sizeof(Trie));
@@ -54,7 +54,7 @@ void *Trie_get(const Trie *tree, const void *key) {
   foreach_v_key() {
     if (!trie_node->children) { return nullptr; }
     trie_node = AVLTree_get(trie_node->children, v_key);
-    if (!trie_node) { return nullptr; };
+    if (!trie_node) { return nullptr; }
   }
   return trie_node->value;
 }
@@ -63,7 +63,7 @@ void Trie_set(Trie *tree, const void *key, void *value) {
   if (!tree) { return; }
   TrieNode *trie_node = tree->root;
   foreach_v_key() {
-    auto node = (TrieNode *) AVLTree_get(trie_node->children, v_key);
+    TrieNode *node = AVLTree_get(trie_node->children, v_key);
     if (!node) {
       node = tree->allocator->calloc(1, sizeof(TrieNode));
       node->children = AVLTree_new(tree->allocator, nullptr);
@@ -86,7 +86,7 @@ void TrieNode_dump(
   Array *child_array = AVLTree_inorder_traversal(node->children, -1, allocator);
   const uint32_t count = Array_length(child_array);
   if (count == 0) {
-    TrieNodeItem node_item = {.offset = 0, .count = 0, .value = node->value};
+    const TrieNodeItem node_item = {.offset = 0, .count = 0, .value = node->value};
     Array_append(node_array, &node_item, 1);
     releasePrimeArray(child_array);
     return;
@@ -103,7 +103,7 @@ void TrieNode_dump(
   }
   const uint32_t jump_key_offset = Array_length(key_array);
   Array_concat(key_array, temp_key_array);
-  TrieNodeItem node_item = {.offset = jump_key_offset, .count = count, .value = node->value};
+  const TrieNodeItem node_item = {.offset = jump_key_offset, .count = count, .value = node->value};
   Array_append(node_array, &node_item, 1);
   releasePrimeArray(temp_key_array);
   releasePrimeArray(child_array);
@@ -119,12 +119,10 @@ void Trie_dump(
 void Trie_del(Trie *tree, const void *key, destruct_t *del_content) {
   TrieNode *trie_node = tree->root;
   if (!trie_node->children) { return; }
-  uint64_t v_key = tree->fn_key(key);
-  for (; v_key != 0; key += tree->key_size) {
+  foreach_v_key() {
     TrieNode *node = AVLTree_get(trie_node->children, v_key);
     if (!node) { return; }
     trie_node = node;
-    v_key = tree->fn_key(key);
   }
   if (!trie_node->value) { return; }
   if (del_content) { del_content(trie_node->value, tree->allocator); }

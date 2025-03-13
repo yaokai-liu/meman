@@ -28,11 +28,11 @@ inline Stack *Stack_new(const Allocator *allocator) {
   return stack;
 }
 
-inline uint32_t Stack_size(Stack *stack) {
+inline uint32_t Stack_size(const Stack *stack) {
   return stack->used;
 }
 
-inline void *Stack_get(Stack *stack, uint32_t offset) {
+inline void *Stack_get(const Stack *stack, uint32_t offset) {
   if (offset >= stack->used) { return nullptr; }
   return stack->stack + offset;
 }
@@ -44,10 +44,10 @@ inline void Stack_clear(Stack *stack) {
   stack->stack = nullptr;
 }
 
-inline uint32_t Stack_push(Stack *stack, const void *data, uint32_t size) {
+inline uint32_t Stack_push(Stack *stack, const void *data, const uint32_t size) {
   if (!data || !size) { return 0; }
   if (stack->used + size >= stack->allocated) {
-    uint32_t length = ((stack->used + size) / ALLOC_LEN + 1) * ALLOC_LEN;
+    const uint32_t length = ((stack->used + size) / ALLOC_LEN + 1) * ALLOC_LEN;
     void *p = stack->allocator->realloc(stack->stack, length);
     if (!p) { return -1; }
     stack->stack = p;
@@ -65,12 +65,12 @@ inline uint32_t Stack_pop(Stack *stack, void *dest, uint32_t size) {
   return size;
 }
 
-inline uint32_t Stack_top(Stack *stack, void *dest, uint32_t size) {
+inline uint32_t Stack_top(const Stack *stack, void *dest, uint32_t size) {
   size = min(stack->used, size);
   if (dest) { memcpy(dest, stack->stack + stack->used - size, size); }
   return size;
 }
 
-inline bool Stack_empty(Stack *stack) {
+inline bool Stack_empty(const Stack *stack) {
   return stack->used <= 0;
 }

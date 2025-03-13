@@ -14,11 +14,11 @@
 typedef struct Stack Stack;
 
 Stack *Stack_new(const Allocator *allocator);
-uint32_t Stack_size(Stack *stack);
-void *Stack_get(Stack *stack, uint32_t offset);
+uint32_t Stack_size(const Stack *stack);
+void *Stack_get(const Stack *stack, uint32_t offset);
 void Stack_clear(Stack *stack);
 uint32_t Stack_push(Stack *stack, const void *data, uint32_t size);
 uint32_t Stack_pop(Stack *stack, void *dest, uint32_t size);
-uint32_t Stack_top(Stack *stack, void *dest, uint32_t size);
-bool Stack_empty(Stack *stack);
+uint32_t Stack_top(const Stack *stack, void *dest, uint32_t size);
+bool Stack_empty(const Stack *stack);
 #endif  // LIU_STACK_H
