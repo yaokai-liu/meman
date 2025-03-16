@@ -52,13 +52,12 @@ bool Array_any(const Array *array, bool (*fn_judgment)(void *));
 // So that for traversing elements.
 bool Array_all(const Array *array, bool (*fn_judgment)(void *));
 
-// Suppose `_to` and `_from` both are not duplicated array.
-uint32_t
-  Array_no_duplicated_concat(struct Array * restrict _to, const struct Array * restrict _from);
 // Filter an array by fn_judgment. The origin_array will not be clean and destroy.
 Array *Array_filter(const Array *origin_array, bool (*fn_judgment)(const void *));
+
+typedef int32_t cmp_t(const void *, const void *);
 // Deduplicate an array by fn_equal. The origin_array will not be clean and destroy.
-Array *Array_deduplicate(const Array *origin_array, bool (*fn_equal)(const void *, const void *));
+Array *Array_deduplicate(const Array *origin_array, cmp_t* fn_cmp);
 
 // Clear array and free all element with `fn_free`.
 uint32_t Array_clear(Array *array, destruct_t *fn_free);
