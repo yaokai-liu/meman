@@ -90,12 +90,13 @@ inline void AVLNode_inorder_traversal(AVLNode *node, Array *pair_array) {
 }
 
 inline AVLNode *AVLNode_get(AVLNode *root, uint64_t key, const AVLTree *tree) {
-  if (!root) { return nullptr; }
-  int32_t cmp =
-    tree->fn_cmp ? tree->fn_cmp((void *) key, (void *) root->key) : (int32_t) (key - root->key);
-  if (cmp > 0) { return AVLNode_get(root->right, key, tree); }
-  if (cmp < 0) { return AVLNode_get(root->left, key, tree); }
-  return root;
+  while (root) {
+    int32_t cmp =
+      tree->fn_cmp ? tree->fn_cmp((void *) key, (void *) root->key) : (int32_t) (key - root->key);
+    if (cmp == 0) { return root; }
+    root = cmp < 0 ? root->left : root->right;
+  }
+  return nullptr;
 }
 
 #define max(_a, _b) ((_a) > (_b) ? (_a) : (_b))

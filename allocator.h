@@ -10,6 +10,8 @@
 
 #include <stddef.h>
 
+#define REFER(T) /*VirtAddr*/ T *
+
 typedef struct {
   void *(* const malloc)(size_t size);
 

@@ -148,24 +148,6 @@ inline Array *Array_filter(const Array *origin_array, bool (*fn_judgment)(const 
   return filtered_array;
 }
 
-inline Array *
-  Array_deduplicate(const Array *origin_array, cmp_t *fn_cmp) {
-  Array *filtered_array = Array_new(origin_array->ele_size,
-                                    origin_array->array_id,
-                                    origin_array->allocator);
-  for (uint32_t i = 0; i < Array_length(origin_array); i++) {
-    const void *ele1 = Array_real_addr(origin_array, i);
-    for (uint32_t j = 0; j < Array_length(filtered_array); j++) {
-      if (j == i) { continue; }
-      const void *ele2 = Array_real_addr(origin_array, j);
-      if (fn_cmp(ele1, ele2) == 0) { goto __deduplicate_find_duplicated; }
-    }
-    Array_append(filtered_array, ele1, 1);
-__deduplicate_find_duplicated:;
-  }
-  return filtered_array;
-}
-
 inline uint32_t Array_clear(Array *array, void (*fn_free)(void *, const Allocator *)) {
   if (fn_free) {
     for (uint32_t i = 0; i < array->used_len; i++) {
