@@ -97,6 +97,7 @@ inline uint32_t Array_append(Array *array, const void *elements, const uint32_t 
 
 uint32_t Array_insert(struct Array *array, uint32_t index, const void *elements, uint32_t count) {
   if (count == 0) { return 0; }
+  if (index > array->used_len) { return 0; }
   uint32_t n_move = array->used_len - index;
   if (n_move == 0) { return Array_append(array, elements, count); }
   if (array->used_len + count >= array->alloc_len) {
@@ -114,6 +115,27 @@ uint32_t Array_insert(struct Array *array, uint32_t index, const void *elements,
   array->allocator->memcpy(dest, buffer, n_move * array->ele_size);
   array->allocator->free(buffer);
   array->used_len += count;
+  return count;
+}
+
+#define min(a, b) ((a < b) ? (a) : (b))
+
+inline uint32_t Array_delete(struct Array *array, uint32_t index, uint32_t count) {
+  if (index >= array->used_len) { return 0; }
+  count = min(count, array->used_len - index);
+  if (count == 0) { return 0; }
+  uint32_t n_move = array->used_len - index - count;
+  if (n_move == 0) {
+    array->used_len -= count;
+    return count;
+  }
+  void *dest = (char *) array->elements + array->ele_size * index;
+  void *src = (char *) array->elements + array->ele_size * (index + count);
+  void * const buffer = array->allocator->malloc(array->ele_size * n_move);
+  array->allocator->memcpy(buffer, src, n_move * array->ele_size);
+  array->allocator->memcpy(dest, buffer, count * array->ele_size);
+  array->allocator->free(buffer);
+  array->used_len -= count;
   return count;
 }
 

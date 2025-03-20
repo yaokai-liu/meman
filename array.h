@@ -44,6 +44,8 @@ uint32_t Array_append(struct Array *array, const void *elements, uint32_t count)
 
 uint32_t Array_insert(struct Array *array, uint32_t index, const void *elements, uint32_t count);
 
+uint32_t Array_delete(struct Array *array, uint32_t index, uint32_t count);
+
 uint32_t Array_concat(Array * restrict dest, Array * restrict src);
 // Promised that every element would be detected with `fn_judgment`.
 // So that for traversing elements.
