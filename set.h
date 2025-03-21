@@ -17,7 +17,10 @@ typedef struct Set Set;
 Set *Set_new(uint32_t set_id, const Allocator *allocator, unikey_t *fn_key);
 
 uint32_t Set_add(Set *set, const REFER(void) v_ele);
+
+// Notice: after remove elements, must tidy the set before access its data
 uint32_t Set_remove(Set *set, const REFER(void) v_ele);
+
 // dest = dest | set
 // @return: count of adds
 uint32_t Set_update(Set *dest, const Set *set);
