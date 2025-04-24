@@ -19,6 +19,8 @@ typedef struct {
 
   void *(* const calloc)(size_t count, size_t size);
 
+  void *(* const aligned_alloc)( size_t alignment, size_t size);
+
   void (* const free)(void *ptr);
 
   void *(* const memcpy)(void * restrict dest, const void * restrict src, size_t size);
