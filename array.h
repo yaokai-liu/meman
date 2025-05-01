@@ -57,6 +57,8 @@ bool Array_all(const Array *array, bool (*fn_judgment)(void *));
 // Filter an array by fn_judgment. The origin_array will not be clean and destroy.
 Array *Array_filter(const Array *origin_array, bool (*fn_judgment)(const void *));
 
+uint32_t Array_resize(Array *array, uint32_t resize, destruct_t *fn_free);
+
 // Clear array and free all element with `fn_free`.
 uint32_t Array_clear(Array *array, destruct_t *fn_free);
 // Reset array and free all element with `fn_free`.

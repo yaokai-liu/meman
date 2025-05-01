@@ -88,6 +88,7 @@ inline uint32_t Array_append(Array *array, const void *elements, const uint32_t 
     if (!p) { return -1; }
     array->elements = p;
     array->alloc_len = length;
+    array->allocator->memset(p, 0, array->alloc_len * array->ele_size);
   }
   void *dest = (char *) array->elements + array->ele_size * array->used_len;
   array->allocator->memcpy(dest, elements, count * array->ele_size);
@@ -106,6 +107,7 @@ uint32_t Array_insert(struct Array *array, uint32_t index, const void *elements,
     if (!p) { return -1; }
     array->elements = p;
     array->alloc_len = length;
+    array->allocator->memset(p, 0, array->alloc_len * array->ele_size);
   }
   void *dest = (char *) array->elements + array->ele_size * index;
   void * const buffer = array->allocator->malloc(array->ele_size * n_move);
@@ -168,6 +170,27 @@ inline Array *Array_filter(const Array *origin_array, bool (*fn_judgment)(const 
     if (fn_judgment(ele)) { Array_append(filtered_array, ele, 1); }
   }
   return filtered_array;
+}
+
+uint32_t Array_resize(Array *array, uint32_t resize, destruct_t *fn_free) {
+  if (resize == array->used_len) {
+    return 0;
+  } else if (resize > array->alloc_len) {
+    uint32_t length = ((resize) / ALLOC_LEN + 1) * ALLOC_LEN;
+    void *p = array->allocator->realloc(array->elements, length * array->ele_size);
+    if (!p) { return 0; }
+    array->elements = p;
+    array->alloc_len = length;
+    array->allocator->memset(p, 0, array->alloc_len * array->ele_size);
+  } else {
+    if (fn_free) for (uint32_t i = resize; i < array->used_len; i++) {
+      void *ele = Array_real_addr(array, i);
+      fn_free(ele, array->allocator);
+    }
+  }
+  uint32_t count = resize - array->used_len;
+  array->used_len = resize;
+  return count;
 }
 
 inline uint32_t Array_clear(Array *array, void (*fn_free)(void *, const Allocator *)) {
