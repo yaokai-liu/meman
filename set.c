@@ -18,7 +18,7 @@ typedef struct Set {
   uint32_t set_id;
 } Set;
 
-inline Set *Set_new(uint32_t set_id, const Allocator *allocator, unikey_t *fn_key) {
+inline Set *Set_new(uint32_t set_id, unikey_t(*fn_key), const Allocator *allocator) {
   Set *set = allocator->calloc(1, sizeof(Set));
   set->allocator = allocator;
   set->elements = Array_new(sizeof(REFER(void)), set_id, allocator);
@@ -120,6 +120,6 @@ inline uint32_t Set_count(Set *set) {
   return Array_length(set->elements);
 }
 
-inline REFER(void) Set_data(Set *set) {
+inline const REFER(void) Set_data(Set *set) {
   return Array_first_real(set->elements);
 }
