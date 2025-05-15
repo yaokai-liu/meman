@@ -80,18 +80,25 @@ inline void *Array_virt2real(const Array *array, const void *vert_addr) {
   return Array_real_addr(array, index);
 }
 
+#define aligned(count) (((count) / ALLOC_LEN + 1) * ALLOC_LEN)
+#define last_ptr       (array->elements + array->ele_size * array->used_len)
+#define extend_to_aligned(count)                                                 \
+  do {                                                                           \
+    if (count >= array->alloc_len) {                                             \
+      uint32_t alloc_size = aligned(count) * array->ele_size;                    \
+      uint32_t new_size = (aligned(count) - array->alloc_len) * array->ele_size; \
+      void *p = array->allocator->realloc(array->elements, alloc_size);          \
+      if (!p) { return -1; }                                                     \
+      array->elements = p;                                                       \
+      array->alloc_len = aligned(count);                                         \
+      array->allocator->memset(last_ptr, 0, new_size);                           \
+    }                                                                            \
+  } while (false)
+
 inline uint32_t Array_append(Array *array, const void *elements, const uint32_t count) {
   if (count == 0) { return 0; }
-  if (array->used_len + count >= array->alloc_len) {
-    uint32_t length = ((array->used_len + count) / ALLOC_LEN + 1) * ALLOC_LEN;
-    void *p = array->allocator->realloc(array->elements, length * array->ele_size);
-    if (!p) { return -1; }
-    array->elements = p;
-    array->alloc_len = length;
-    array->allocator->memset(p, 0, array->alloc_len * array->ele_size);
-  }
-  void *dest = (char *) array->elements + array->ele_size * array->used_len;
-  array->allocator->memcpy(dest, elements, count * array->ele_size);
+  extend_to_aligned(array->used_len + count);
+  array->allocator->memcpy(last_ptr, elements, count * array->ele_size);
   array->used_len += count;
   return count;
 }
@@ -101,14 +108,7 @@ uint32_t Array_insert(struct Array *array, uint32_t index, const void *elements,
   if (index > array->used_len) { return 0; }
   uint32_t n_move = array->used_len - index;
   if (n_move == 0) { return Array_append(array, elements, count); }
-  if (array->used_len + count >= array->alloc_len) {
-    uint32_t length = ((array->used_len + count) / ALLOC_LEN + 1) * ALLOC_LEN;
-    void *p = array->allocator->realloc(array->elements, length * array->ele_size);
-    if (!p) { return -1; }
-    array->elements = p;
-    array->alloc_len = length;
-    array->allocator->memset(p, 0, array->alloc_len * array->ele_size);
-  }
+  extend_to_aligned(array->used_len + count);
   void *dest = (char *) array->elements + array->ele_size * index;
   void * const buffer = array->allocator->malloc(array->ele_size * n_move);
   array->allocator->memcpy(buffer, dest, n_move * array->ele_size);
@@ -173,17 +173,10 @@ inline Array *Array_filter(const Array *origin_array, bool (*fn_judgment)(const 
 }
 
 uint32_t Array_resize(Array *array, uint32_t resize, destruct_t *fn_free) {
-  if (resize == array->used_len) {
-    return 0;
-  } else if (resize > array->alloc_len) {
-    uint32_t length = ((resize) / ALLOC_LEN + 1) * ALLOC_LEN;
-    void *p = array->allocator->realloc(array->elements, length * array->ele_size);
-    if (!p) { return 0; }
-    array->elements = p;
-    array->alloc_len = length;
-    array->allocator->memset(p, 0, array->alloc_len * array->ele_size);
-  } else {
-    if (fn_free) for (uint32_t i = resize; i < array->used_len; i++) {
+  if (resize == array->used_len) { return 0; }
+  extend_to_aligned(resize);
+  if (resize < array->used_len && fn_free) {
+    for (uint32_t i = resize; i < array->used_len; i++) {
       void *ele = Array_real_addr(array, i);
       fn_free(ele, array->allocator);
     }

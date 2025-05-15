@@ -120,6 +120,6 @@ inline uint32_t Set_count(Set *set) {
   return Array_length(set->elements);
 }
 
-inline const REFER(void) Set_data(Set *set) {
+inline REFER(void) Set_data(Set *set) {
   return Array_first_real(set->elements);
 }

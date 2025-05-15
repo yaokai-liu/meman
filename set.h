@@ -31,7 +31,7 @@ uint32_t Set_reduce(Set *set, const Set *red);
 // @return: count of removes
 uint32_t Set_limit(Set *set, const Set *lim);
 
-const REFER(void) Set_data(Set *set);
+REFER(void) Set_data(Set *set);
 uint32_t Set_count(Set *set);
 bool Set_has(const Set *set, const REFER(void) v_ele);
 
