@@ -54,8 +54,9 @@ bool Array_any(const Array *array, bool (*fn_judgment)(void *));
 // So that for traversing elements.
 bool Array_all(const Array *array, bool (*fn_judgment)(void *));
 
+uint32_t Array_filter(Array *origin_array, bool (*fn_judgment)(const void *));
 // Filter an array by fn_judgment. The origin_array will not be clean and destroy.
-Array *Array_filter(const Array *origin_array, bool (*fn_judgment)(const void *));
+Array *Array_filtered(const Array *origin_array, bool (*fn_judgment)(const void *));
 
 uint32_t Array_resize(Array *array, uint32_t resize, destruct_t *fn_free);
 

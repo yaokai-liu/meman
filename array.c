@@ -163,7 +163,19 @@ inline bool Array_all(const Array *array, bool (*fn_judgment)(void *)) {
   return judge;
 }
 
-inline Array *Array_filter(const Array *origin_array, bool (*fn_judgment)(const void *)) {
+uint32_t Array_filter(Array *origin_array, bool (*fn_judgment)(const void *)) {
+  Array *filtered_array = Array_new(origin_array->ele_size, origin_array->array_id, origin_array->allocator);
+  for (uint32_t i = 0; i < Array_length(origin_array); i++) {
+    const void *ele = Array_real_addr(origin_array, i);
+    if (fn_judgment(ele)) { Array_append(filtered_array, ele, 1); }
+  }
+  Array_reset(origin_array, nullptr);
+  *origin_array = *filtered_array;
+  Array_destroy(filtered_array);
+  return origin_array->used_len;
+}
+
+inline Array *Array_filtered(const Array *origin_array, bool (*fn_judgment)(const void *)) {
   Array *filtered_array = Array_new(origin_array->ele_size, -1, origin_array->allocator);
   for (uint32_t i = 0; i < Array_length(origin_array); i++) {
     const void *ele = Array_real_addr(origin_array, i);
