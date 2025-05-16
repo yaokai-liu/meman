@@ -14,7 +14,7 @@ typedef uint64_t unikey_t(const void *);
 
 typedef struct Set Set;
 
-Set *Set_new(uint32_t set_id, unikey_t(*fn_key), const Allocator *allocator);
+Set *Set_new(uint32_t set_id, unikey_t *fn_key, const Allocator *allocator);
 
 uint32_t Set_add(Set *set, const REFER(void) v_ele);
 
