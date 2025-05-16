@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 typedef struct AVLTree AVLTree;
+extern const size_t sizeof_avltree;
 
 typedef int32_t compare_t(void *, void *);
 

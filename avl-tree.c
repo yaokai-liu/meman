@@ -23,10 +23,12 @@ typedef struct AVLTree {
   AVLNode *root;
 } AVLTree;
 
-AVLNode *AVLNode_new(const uint64_t key, AVLTree *tree);
+const size_t sizeof_avltree = sizeof(AVLTree);
+
+AVLNode *AVLNode_new(uint64_t key, AVLTree *tree);
 
 AVLNode *AVLNode_get(AVLNode *root, uint64_t key, const AVLTree *tree);
-AVLNode *AVLNode_add(AVLNode **root, const uint64_t key, AVLTree *tree);
+AVLNode *AVLNode_add(AVLNode **root, uint64_t key, AVLTree *tree);
 void AVLNode_del(AVLNode *root, destruct_t *del_content, AVLTree *tree);
 void AVLNode_inorder_traversal(AVLNode *node, Array *pair_array);
 
