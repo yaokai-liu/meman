@@ -141,7 +141,7 @@ inline uint32_t Array_delete(struct Array *array, uint32_t index, uint32_t count
   return count;
 }
 
-inline uint32_t Array_concat(Array * restrict dest, Array * restrict src) {
+inline uint32_t Array_concat(Array *restrict dest, const Array *restrict src) {
   return Array_append(dest, src->elements, src->used_len);
 }
 
