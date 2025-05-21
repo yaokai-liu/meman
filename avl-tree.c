@@ -63,6 +63,11 @@ inline Array /*<AVLPair>*/ *
   return pair_array;
 }
 
+inline void AVLTree_reset(AVLTree *tree, destruct_t *del_value) {
+  if (!tree) { return; }
+  AVLNode_del(tree->root, del_value, tree);
+}
+
 inline void AVLTree_destroy(AVLTree *tree, destruct_t *del_value) {
   if (!tree) { return; }
   AVLNode_del(tree->root, del_value, tree);

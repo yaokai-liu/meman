@@ -16,62 +16,72 @@ typedef struct Set {
   AVLTree *key_tree;
   unikey_t *fn_key;
   uint32_t set_id;
+  uint32_t ele_size;
 } Set;
 
-inline Set *Set_new(uint32_t set_id, unikey_t *fn_key, const Allocator *allocator) {
+inline Set *Set_new(uint32_t ele_size, uint32_t set_id, unikey_t *fn_key, const Allocator *allocator) {
   Set *set = allocator->calloc(1, sizeof(Set));
   set->allocator = allocator;
-  set->elements = Array_new(sizeof(REFER(void)), set_id, allocator);
+  set->elements = Array_new(ele_size, set_id, allocator);
   set->keys = Array_new(sizeof(uint64_t), set_id, allocator);
   set->key_tree = AVLTree_new(allocator, nullptr);
   set->fn_key = fn_key;
   set->set_id = set_id;
+  set->ele_size = ele_size;
   return set;
 }
 
-inline uint32_t Set_add(Set *set, const REFER(void) v_ele) {
-  uint64_t key = set->fn_key ? set->fn_key(v_ele) : (uint64_t) v_ele;
-  if (!AVLTree_get(set->key_tree, key)) {
+inline uint32_t Set_add(Set *set, const void *ele) {
+  uint64_t key = set->fn_key ? set->fn_key(ele) : (uint64_t) ele;
+  REFER(void) v_element = AVLTree_get(set->key_tree, key);
+  if (!v_element) {
     Array_append(set->keys, &key, 1);
-    Array_append(set->elements, &v_ele, 1);
-    REFER(REFER(void)) v_offset = Array_last_virt(set->elements);
-    AVLTree_set(set->key_tree, key, v_offset);
+    Array_append(set->elements, &ele, 1);
+    v_element = Array_last_virt(set->elements);
+    AVLTree_set(set->key_tree, key, v_element);
     return 1;
   }
   return 0;
 }
 
-inline uint32_t Set_remove(Set *set, const REFER(void) v_ele) {
-  uint64_t key = set->fn_key ? set->fn_key(v_ele) : (uint64_t) v_ele;
-  REFER(REFER(void)) v_offset = AVLTree_get(set->key_tree, key);
-  if (!v_offset) { return 0; }
+inline uint32_t Set_remove(Set *set, const void *ele) {
+  uint64_t key = set->fn_key ? set->fn_key(ele) : (uint64_t) ele;
+  REFER(void) v_element = AVLTree_get(set->key_tree, key);
+  if (!v_element) { return 0; }
   AVLTree_set(set->key_tree, key, nullptr);
   return 1;
 }
 
-inline bool Set_has(const Set *set, const REFER(void) v_ele) {
-  uint64_t key = set->fn_key ? set->fn_key(v_ele) : (uint64_t) v_ele;
+inline bool Set_has(const Set *set, const void *ele) {
+  uint64_t key = set->fn_key ? set->fn_key(ele) : (uint64_t) ele;
   return AVLTree_get(set->key_tree, key) ? 1 : 0;
 }
 
 inline uint32_t Set_update(Set *dest, const Set *set) {
+  if (set->ele_size != dest->ele_size) { return 0; }
   uint32_t updated = 0;
   const REFER(void) *refers = Array_first_real(set->elements);
   const uint32_t count = Array_length(set->elements);
-  for (uint32_t i = 0; i < count; i++) { updated += Set_add(dest, refers[i]); }
+  for (uint32_t i = 0; i < count; i++) {
+    updated += Set_add(dest, refers[i]);
+  }
   return updated;
 }
 
 inline uint32_t Set_reduce(Set *set, const Set *red) {
+  if (red->ele_size != set->ele_size) { return 0; }
   uint32_t removed = 0;
   const REFER(void) *refers = Array_first_real(red->elements);
   const uint32_t count = Array_length(red->elements);
-  for (uint32_t i = 0; i < count; i++) { removed += Set_remove(set, refers[i]); }
+  for (uint32_t i = 0; i < count; i++) {
+    removed += Set_remove(set, refers[i]);
+  }
   Set_tidy(set);
   return removed;
 }
 
 inline uint32_t Set_limit(Set *set, const Set *lim) {
+  if (lim->ele_size != set->ele_size) { return 0; }
   uint32_t removed = 0;
   const REFER(void) *refers = Array_first_real(set->elements);
   const uint32_t count = Array_length(set->elements);
@@ -88,16 +98,15 @@ inline void Set_tidy(Set *set) {
 
   AVLTree *new_key_tree = AVLTree_new(set->allocator, nullptr);
   Array *new_keys = Array_new(sizeof(uint64_t), set->set_id, set->allocator);
-  Array *new_elements = Array_new(sizeof(REFER(void)), set->set_id, set->allocator);
+  Array *new_elements = Array_new(set->ele_size, set->set_id, set->allocator);
   for (uint32_t i = 0; i < count; i++) {
-    REFER(REFER(void)) v_offset = AVLTree_get(set->key_tree, keys[i]);
-    if (v_offset) {
-      uint32_t *key = Array_virt2real(set->keys, v_offset);
-      REFER(void) *element = Array_virt2real(set->elements, v_offset);
-      Array_append(new_keys, key, 1);
-      Array_append(new_elements, element, 1);
-      AVLTree_set(new_key_tree, keys[i], v_offset);
-    }
+    REFER(void) v_element = AVLTree_get(set->key_tree, keys[i]);
+    if (!v_element) { continue; }
+    uint32_t *key = Array_virt2real(set->keys, v_element);
+    void *element = Array_virt2real(set->elements, v_element);
+    Array_append(new_keys, key, 1);
+    Array_append(new_elements, element, 1);
+    AVLTree_set(new_key_tree, keys[i], v_element);
   }
   Set_reset(set);
   set->keys = new_keys;
@@ -120,6 +129,6 @@ inline uint32_t Set_count(Set *set) {
   return Array_length(set->elements);
 }
 
-inline REFER(void) Set_data(Set *set) {
+inline void *Set_data(Set *set) {
   return Array_first_real(set->elements);
 }

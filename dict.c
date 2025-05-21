@@ -14,20 +14,21 @@
 typedef struct Dict {
   const Allocator *allocator;
   Array *keys;
-  Array *elements;
+  Array *eles;
   AVLTree *key_tree;
   unikey_t *fn_key;
   uint32_t dict_id;
+  uint32_t key_size;
   uint32_t ele_size;
 } Dict;
 
 inline Dict *
-Dict_new(uint32_t ele_size, key_t *fn_key, uint32_t dict_id, const Allocator *allocator) {
+Dict_new(uint32_t key_size, uint32_t ele_size, key_t *fn_key, uint32_t dict_id, const Allocator *allocator) {
   if (!ele_size) { return nullptr; }
   Dict *dict = allocator->calloc(1, sizeof(Dict));
   dict->allocator = allocator;
-  dict->elements = Array_new(ele_size, dict_id, allocator);
-  dict->keys = Array_new(sizeof(uint64_t), dict_id, allocator);
+  dict->eles = Array_new(ele_size, dict_id, allocator);
+  dict->keys = Array_new(key_size, dict_id, allocator);
   dict->key_tree = AVLTree_new(allocator, nullptr);
   dict->fn_key = fn_key;
   dict->dict_id = dict_id;
@@ -40,11 +41,11 @@ inline void Dict_set(Dict *dict, const void *key, const void *ele) {
   REFER(void) v_element = AVLTree_get(dict->key_tree, i_key);
   if (!v_element) {
     Array_append(dict->keys, &key, 1);
-    Array_append(dict->elements, &ele, 1);
-    v_element = Array_last_virt(dict->elements);
+    Array_append(dict->eles, &ele, 1);
+    v_element = Array_last_virt(dict->eles);
     AVLTree_set(dict->key_tree, i_key, v_element);
   } else {
-    void *element = Array_virt2real(dict->elements, v_element);
+    void *element = Array_virt2real(dict->eles, v_element);
     dict->allocator->memcpy(element, ele, dict->ele_size);
   }
 }
@@ -62,21 +63,27 @@ inline uint32_t Dict_remove(Dict *dict, const void *keys[], uint32_t count) {
 
 inline void *Dict_get(const Dict *dict, const void *key) {
   uint64_t i_key = dict->fn_key ? dict->fn_key(key) : (uint64_t) key;
-  return Array_virt2real(dict->elements, AVLTree_get(dict->key_tree, i_key));
+  return Array_virt2real(dict->eles, AVLTree_get(dict->key_tree, i_key));
 }
 
-inline uint32_t Dict_update(Dict *dest, const Dict *dict) {
+inline uint32_t Dict_update(Dict *dest, const Dict *dict, bool override) {
+  if (dict->fn_key != dest->fn_key) { return 0; }
+  if (dict->key_size != dest->key_size) { return 0; }
   if (dict->ele_size != dest->ele_size) { return 0; }
   uint32_t updated = 0;
-  uint32_t offset = Array_length(dest->keys);
-  Array_concat(dest->elements, dict->elements);
-  const uint32_t count = Array_length(dict->keys);
-  const uint64_t *const keys = Array_first_real(dict->keys);
-  for (uint32_t i = 0; i < count; i++) {
-    REFER(void) v_element = AVLTree_get(dict->key_tree, keys[i]);
-    if (!v_element) { continue; }
-    AVLTree_set(dest->key_tree, keys[i], v_element + offset);
-    updated ++;
+  uint32_t old_count = Array_length(dest->keys);
+  Array_concat(dest->keys, dict->keys);
+  Array_concat(dest->eles, dict->eles);
+  const uint32_t new_count = Array_length(dest->keys);
+  const void *const keys = Array_first_real(dest->keys);
+  for (uint32_t i = old_count; i < new_count; i++) {
+    uint64_t i_key = dest->fn_key((keys + i * dest->key_size));
+    if (!override && AVLTree_get(dest->key_tree, i_key)) { continue; }
+    REFER(void) v_element = AVLTree_get(dict->key_tree, i_key);
+    if (v_element) {
+      AVLTree_set(dest->key_tree, i_key, v_element + old_count);
+      updated ++;
+    }
   }
   Dict_tidy(dest);
   return updated;
@@ -87,25 +94,27 @@ inline void Dict_tidy(Dict *dict) {
   const uint32_t count = Array_length(dict->keys);
 
   AVLTree *new_key_tree = AVLTree_new(dict->allocator, nullptr);
-  Array *new_keys = Array_new(sizeof(uint64_t), dict->dict_id, dict->allocator);
-  Array *new_elements = Array_new(dict->ele_size, dict->dict_id, dict->allocator);
+  Array *new_keys = Array_new(dict->key_size, dict->dict_id, dict->allocator);
+  Array *new_eles = Array_new(dict->ele_size, dict->dict_id, dict->allocator);
   for (uint32_t i = 0; i < count; i++) {
-    REFER(void) v_element = AVLTree_get(dict->key_tree, keys[i]);
-    if (!v_element) { continue; }
-    void *element = Array_virt2real(dict->elements, v_element);
-    Array_append(new_keys, &keys[i], 1);
-    Array_append(new_elements, element, 1);
-    AVLTree_set(new_key_tree, keys[i], Array_last_virt(new_elements));
+    uint64_t i_key = dict->fn_key(&keys[i]);
+    REFER(void) v_element = AVLTree_get(dict->key_tree, i_key);
+    if (v_element) {
+      void *element = Array_virt2real(dict->eles, v_element);
+      Array_append(new_keys, &keys[i], 1);
+      Array_append(new_eles, element, 1);
+      AVLTree_set(new_key_tree, keys[i], Array_last_virt(new_eles));
+    }
   }
   Dict_reset(dict);
   dict->keys = new_keys;
-  dict->elements = new_elements;
+  dict->eles = new_eles;
   dict->key_tree = new_key_tree;
 }
 
 inline void Dict_reset(Dict *dict) {
   releasePrimeArray(dict->keys);
-  releasePrimeArray(dict->elements);
+  releasePrimeArray(dict->eles);
   AVLTree_destroy(dict->key_tree, nullptr);
 }
 
@@ -115,9 +124,13 @@ inline void Dict_destroy(Dict *dict) {
 }
 
 inline uint32_t Dict_count(Dict *dict) {
-  return Array_length(dict->elements);
+  return Array_length(dict->keys);
 }
 
-inline void *Dict_data(Dict *dict) {
-  return Array_first_real(dict->elements);
+inline void *Dict_keys(Dict *dict) {
+  return Array_first_real(dict->keys);
+}
+
+inline void *Dict_elements(Dict *dict) {
+  return Array_first_real(dict->eles);
 }
