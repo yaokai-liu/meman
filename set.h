@@ -13,6 +13,7 @@
 typedef uint64_t unikey_t(const void *);
 
 typedef struct Set Set;
+extern const uint32_t sizeof_set;
 
 Set *Set_new(uint32_t ele_size, uint32_t set_id, unikey_t *fn_key, const Allocator *allocator);
 

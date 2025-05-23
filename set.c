@@ -18,6 +18,7 @@ typedef struct Set {
   uint32_t set_id;
   uint32_t ele_size;
 } Set;
+const uint32_t sizeof_set = sizeof(Set);
 
 inline Set *Set_new(uint32_t ele_size, uint32_t set_id, unikey_t *fn_key, const Allocator *allocator) {
   Set *set = allocator->calloc(1, sizeof(Set));
