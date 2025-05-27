@@ -40,7 +40,7 @@ inline uint32_t Set_add(Set *set, const void *ele) {
   REFER(void) v_element = AVLTree_get(set->key_tree, key);
   if (!v_element) {
     Array_append(set->keys, &key, 1);
-    Array_append(set->elements, &ele, 1);
+    Array_append(set->elements, ele, 1);
     v_element = Array_last_virt(set->elements);
     AVLTree_set(set->key_tree, key, v_element);
     return 1;

@@ -23,4 +23,6 @@ void *Trie_get(const Trie *tree, const void *key);
 void Trie_set(Trie *tree, const void *key, void *value);
 void Trie_del(Trie *tree, const void *key, destruct_t *del_content);
 
+uint64_t char2u64(const void *key);
+
 #endif  // LIU_TRIE_H

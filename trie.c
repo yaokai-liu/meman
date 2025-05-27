@@ -142,3 +142,6 @@ void Trie_destroy(Trie *tree) {
   tree->allocator->free(tree);
 }
 
+uint64_t char2u64(const void *key) {
+  return *(const char *) key;
+}
