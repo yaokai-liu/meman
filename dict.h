@@ -15,7 +15,8 @@ typedef uint64_t key_t(const void *);
 
 typedef struct Dict Dict;
 
-Dict *Dict_new(uint32_t key_size, uint32_t ele_size, key_t *fn_key, uint32_t dict_id, const Allocator *allocator);
+Dict * Dict_new(uint32_t key_size, uint32_t ele_size, key_t *fn_key, uint32_t dict_id,
+                destruct_t *fn_rel_key, destruct_t *fn_rel_ele, const Allocator *allocator);
 
 void Dict_set(Dict *dict, const void *key, const void *ele);
 

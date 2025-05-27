@@ -17,10 +17,12 @@ typedef struct Set {
   unikey_t *fn_key;
   uint32_t set_id;
   uint32_t ele_size;
+  destruct_t *fn_release;
 } Set;
 const uint32_t sizeof_set = sizeof(Set);
 
-inline Set *Set_new(uint32_t ele_size, uint32_t set_id, unikey_t *fn_key, const Allocator *allocator) {
+inline Set *Set_new(uint32_t ele_size, uint32_t set_id, unikey_t *fn_key,
+                    destruct_t *fn_release, const Allocator *allocator) {
   Set *set = allocator->calloc(1, sizeof(Set));
   set->allocator = allocator;
   set->elements = Array_new(ele_size, set_id, allocator);
@@ -29,6 +31,7 @@ inline Set *Set_new(uint32_t ele_size, uint32_t set_id, unikey_t *fn_key, const 
   set->fn_key = fn_key;
   set->set_id = set_id;
   set->ele_size = ele_size;
+  set->fn_release = fn_release;
   return set;
 }
 
@@ -117,7 +120,12 @@ inline void Set_tidy(Set *set) {
 
 inline void Set_reset(Set *set) {
   releasePrimeArray(set->keys);
-  releasePrimeArray(set->elements);
+  if (set->fn_release) {
+    Array_reset(set->elements, set->fn_release);
+    Array_destroy(set->elements);
+  } else {
+    releasePrimeArray(set->elements);
+  }
   AVLTree_destroy(set->key_tree, nullptr);
 }
 
