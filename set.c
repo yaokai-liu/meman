@@ -67,7 +67,7 @@ inline uint32_t Set_update(Set *dest, const Set *set) {
   const REFER(void) *refers = Array_first_real(set->elements);
   const uint32_t count = Array_length(set->elements);
   for (uint32_t i = 0; i < count; i++) {
-    updated += Set_add(dest, refers[i]);
+    updated += Set_add(dest, &refers[i]);
   }
   return updated;
 }
@@ -78,7 +78,7 @@ inline uint32_t Set_reduce(Set *set, const Set *red) {
   const REFER(void) *refers = Array_first_real(red->elements);
   const uint32_t count = Array_length(red->elements);
   for (uint32_t i = 0; i < count; i++) {
-    removed += Set_remove(set, refers[i]);
+    removed += Set_remove(set, &refers[i]);
   }
   Set_tidy(set);
   return removed;
@@ -90,7 +90,7 @@ inline uint32_t Set_limit(Set *set, const Set *lim) {
   const REFER(void) *refers = Array_first_real(set->elements);
   const uint32_t count = Array_length(set->elements);
   for (uint32_t i = 0; i < count; i++) {
-    if (!Set_has(lim, refers[i])) { removed += Set_remove(set, refers[i]); }
+    if (!Set_has(lim, refers[i])) { removed += Set_remove(set, &refers[i]); }
   }
   Set_tidy(set);
   return removed;
