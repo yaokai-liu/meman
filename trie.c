@@ -26,7 +26,7 @@ typedef struct Trie {
   TrieNode *root;
 } Trie;
 
-void delTrieNode(TrieNode *trie_node, const Allocator *allocator);
+static void delTrieNode(TrieNode *trie_node, const Allocator *allocator);
 
 Trie *Trie_new(const uint32_t key_size, fn_key_t *fn_key, const Allocator *allocator) {
   if (!key_size || !fn_key) { return nullptr; }

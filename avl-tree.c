@@ -25,12 +25,11 @@ typedef struct AVLTree {
 
 const size_t sizeof_avltree = sizeof(AVLTree);
 
-AVLNode *AVLNode_new(uint64_t key, AVLTree *tree);
-
-AVLNode *AVLNode_get(AVLNode *root, uint64_t key, const AVLTree *tree);
-AVLNode *AVLNode_add(AVLNode **root, uint64_t key, AVLTree *tree);
-void AVLNode_del(AVLNode *root, destruct_t *del_content, AVLTree *tree);
-void AVLNode_inorder_traversal(AVLNode *node, Array *pair_array);
+static AVLNode *AVLNode_new(uint64_t key, AVLTree *tree);
+static AVLNode *AVLNode_get(AVLNode *root, uint64_t key, const AVLTree *tree);
+static AVLNode *AVLNode_add(AVLNode **root, uint64_t key, AVLTree *tree);
+static void AVLNode_del(AVLNode *root, destruct_t *del_content, AVLTree *tree);
+static void AVLNode_inorder_traversal(AVLNode *node, Array *pair_array);
 
 inline AVLTree *AVLTree_new(const Allocator *allocator, compare_t *fn_compare) {
   AVLTree *tree = allocator->calloc(1, sizeof(AVLTree));
