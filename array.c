@@ -25,7 +25,7 @@ const size_t sizeof_array = sizeof(Array);
 Array *Array_new(const uint32_t ele_size, const uint32_t id, const Allocator * const allocator) {
   if (ele_size == 0) { return nullptr; }
   if (id == 0) { return nullptr; }
-  Array *array = allocator->calloc(1, sizeof(struct Array));
+  Array *array = allocator->calloc(1, sizeof(Array));
   Array_init(array, ele_size, allocator);
   array->array_id = id;
   return array;
@@ -103,7 +103,7 @@ inline uint32_t Array_append(Array *array, const void *elements, const uint32_t 
   return count;
 }
 
-uint32_t Array_insert(struct Array *array, uint32_t index, const void *elements, uint32_t count) {
+uint32_t Array_insert(Array *array, uint32_t index, const void *elements, uint32_t count) {
   if (count == 0) { return 0; }
   if (index > array->used_len) { return 0; }
   uint32_t n_move = array->used_len - index;
@@ -122,7 +122,7 @@ uint32_t Array_insert(struct Array *array, uint32_t index, const void *elements,
 
 #define min(a, b) ((a < b) ? (a) : (b))
 
-inline uint32_t Array_delete(struct Array *array, uint32_t index, uint32_t count) {
+inline uint32_t Array_delete(Array *array, uint32_t index, uint32_t count) {
   if (index >= array->used_len) { return 0; }
   count = min(count, array->used_len - index);
   if (count == 0) { return 0; }

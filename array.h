@@ -20,12 +20,12 @@ Array *Array_new(uint32_t ele_size, uint32_t id, const Allocator *allocator);
 
 uint32_t Array_init(Array *array, uint32_t ele_size, const Allocator *allocator);
 
-uint32_t Array_length(const struct Array *array);
+uint32_t Array_length(const Array *array);
 
 // Note: append may change elements' real address,
 // so it is not promised that two `Array_real_addr` of one same `index` will return a
 // same address.
-void *Array_real_addr(const struct Array *array, uint32_t index);
+void *Array_real_addr(const Array *array, uint32_t index);
 // Promised that elements' virtual address would not be changed in one array.
 void *Array_virt_addr(const Array *array, uint32_t index);
 
@@ -40,11 +40,11 @@ void *Array_real2virt(const Array *array, const void *real_addr);
 
 void *Array_virt2real(const Array *array, const void *vert_addr);
 
-uint32_t Array_append(struct Array *array, const void *elements, uint32_t count);
+uint32_t Array_append(Array *array, const void *elements, uint32_t count);
 
-uint32_t Array_insert(struct Array *array, uint32_t index, const void *elements, uint32_t count);
+uint32_t Array_insert(Array *array, uint32_t index, const void *elements, uint32_t count);
 
-uint32_t Array_delete(struct Array *array, uint32_t index, uint32_t count);
+uint32_t Array_delete(Array *array, uint32_t index, uint32_t count);
 
 uint32_t Array_concat(Array *restrict dest, const Array *restrict src);
 // Promised that every element would be detected with `fn_judgment`.
