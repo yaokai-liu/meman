@@ -20,9 +20,9 @@ typedef struct Dict {
   uint32_t dict_id;
   uint32_t key_size;
   uint32_t ele_size;
+  bool     tidied;
   destruct_t *fn_rel_key;
   destruct_t *fn_rel_ele;
-  bool        tidied;
 } Dict;
 
 inline Dict *
@@ -59,15 +59,15 @@ inline void Dict_set(Dict *dict, const void *key, const void *ele) {
 
 inline uint32_t Dict_remove(Dict *dict, const void *keys[], uint32_t count) {
   for (uint32_t i = 0; i < count; i++) {
-    uint64_t key = dict->fn_key ? dict->fn_key(keys[i]) : (uint64_t) keys[i];
-    REFER(void) v_element = AVLTree_get(dict->map_tree, key);
+    uint64_t i_key = dict->fn_key ? dict->fn_key(keys[i]) : (uint64_t) keys[i];
+    REFER(void) v_element = AVLTree_get(dict->map_tree, i_key);
     if (!v_element) { continue; }
     if (dict->fn_rel_key) { dict->fn_rel_key((void *) keys[i], dict->allocator); }
     if (dict->fn_rel_ele) {
       void *element = Array_virt2real(dict->eles, v_element);
       dict->fn_rel_ele(element, dict->allocator);
     }
-    AVLTree_set(dict->map_tree, key, nullptr);
+    AVLTree_set(dict->map_tree, i_key, nullptr);
   }
   dict->tidied = false;
   return count;
@@ -160,4 +160,8 @@ inline void *Dict_keys(Dict *dict) {
 inline void *Dict_elements(Dict *dict) {
   if (!dict->tidied) { Dict_tidy(dict); }
   return Array_first_real(dict->eles);
+}
+
+uint64_t refer2u64(REFER(void) *key) {
+  return (uint64_t) *key;
 }

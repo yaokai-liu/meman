@@ -42,4 +42,6 @@ void Dict_tidy(Dict *dict);
 void Dict_reset(Dict *dict);
 void Dict_destroy(Dict *dict);
 
+uint64_t refer2u64(REFER(void) *key);
+
 #endif //LIU_DICT_H
