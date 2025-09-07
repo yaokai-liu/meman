@@ -22,6 +22,7 @@ typedef struct Dict {
   uint32_t ele_size;
   destruct_t *fn_rel_key;
   destruct_t *fn_rel_ele;
+  bool        tidied;
 } Dict;
 
 inline Dict *
@@ -38,6 +39,7 @@ Dict_new(uint32_t key_size, uint32_t ele_size, key_t *fn_key, uint32_t dict_id,
   dict->ele_size = ele_size;
   dict->fn_rel_key = fn_rel_key;
   dict->fn_rel_ele = fn_rel_ele;
+  dict->tidied = true;
   return dict;
 }
 
@@ -62,7 +64,7 @@ inline uint32_t Dict_remove(Dict *dict, const void *keys[], uint32_t count) {
     if (!v_element) { continue; }
     AVLTree_set(dict->map_tree, key, nullptr);
   }
-  Dict_tidy(dict);
+  dict->tidied = false;
   return count;
 }
 
@@ -91,7 +93,6 @@ inline uint32_t Dict_update(Dict *dest, const Dict *dict, bool override) {
       updated ++;
     }
   }
-  Dict_tidy(dest);
   return updated;
 }
 
@@ -116,6 +117,7 @@ inline void Dict_tidy(Dict *dict) {
   dict->keys = new_keys;
   dict->eles = new_eles;
   dict->map_tree = new_map_tree;
+  dict->tidied = true;
 }
 
 inline void Dict_reset(Dict *dict) {
@@ -132,6 +134,7 @@ inline void Dict_reset(Dict *dict) {
     releasePrimeArray(dict->eles);
   }
   AVLTree_destroy(dict->map_tree, nullptr);
+  dict->tidied = true;
 }
 
 inline void Dict_destroy(Dict *dict) {
@@ -140,13 +143,16 @@ inline void Dict_destroy(Dict *dict) {
 }
 
 inline uint32_t Dict_count(Dict *dict) {
+  if (!dict->tidied) { Dict_tidy(dict); }
   return Array_length(dict->keys);
 }
 
 inline void *Dict_keys(Dict *dict) {
+  if (!dict->tidied) { Dict_tidy(dict); }
   return Array_first_real(dict->keys);
 }
 
 inline void *Dict_elements(Dict *dict) {
+  if (!dict->tidied) { Dict_tidy(dict); }
   return Array_first_real(dict->eles);
 }
