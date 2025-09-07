@@ -62,6 +62,11 @@ inline uint32_t Dict_remove(Dict *dict, const void *keys[], uint32_t count) {
     uint64_t key = dict->fn_key ? dict->fn_key(keys[i]) : (uint64_t) keys[i];
     REFER(void) v_element = AVLTree_get(dict->map_tree, key);
     if (!v_element) { continue; }
+    if (dict->fn_rel_key) { dict->fn_rel_key((void *) keys[i], dict->allocator); }
+    if (dict->fn_rel_ele) {
+      void *element = Array_virt2real(dict->eles, v_element);
+      dict->fn_rel_ele(element, dict->allocator);
+    }
     AVLTree_set(dict->map_tree, key, nullptr);
   }
   dict->tidied = false;
