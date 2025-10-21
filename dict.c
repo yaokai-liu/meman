@@ -161,7 +161,3 @@ inline void *Dict_elements(Dict *dict) {
   if (!dict->tidied) { Dict_tidy(dict); }
   return Array_first_real(dict->eles);
 }
-
-uint64_t refer2u64(const REFER(void) *key) {
-  return (uint64_t) *key;
-}
