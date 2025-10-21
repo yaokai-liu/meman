@@ -8,12 +8,11 @@
 #ifndef LIU_TRIE_H
 #define LIU_TRIE_H
 
-#include "allocator.h"
 #include <stdint.h>
+#include "allocator.h"
+#include "key_t.h"
 
 typedef struct Trie Trie;
-
-typedef uint64_t fn_key_t(const void *);
 
 Trie *Trie_new(uint32_t key_size, uint64_t (*fn_key)(const void *), const Allocator *allocator);
 void Trie_destroy(Trie *tree);
@@ -22,8 +21,5 @@ uint64_t Trie_count(const Trie *tree);
 void *Trie_get(const Trie *tree, const void *key);
 void Trie_set(Trie *tree, const void *key, void *value);
 void Trie_del(Trie *tree, const void *key, destruct_t *del_content);
-
-uint64_t char2u64(const char *key);
-uint64_t refer2u64(const REFER(void) *key);
 
 #endif  // LIU_TRIE_H

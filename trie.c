@@ -21,14 +21,14 @@ typedef struct TrieNode {
 typedef struct Trie {
   const Allocator *allocator;
   uint32_t key_size;
-  fn_key_t *fn_key;
+  key_t *fn_key;
   uint64_t count;
   TrieNode *root;
 } Trie;
 
 static void delTrieNode(TrieNode *trie_node, const Allocator *allocator);
 
-Trie *Trie_new(const uint32_t key_size, fn_key_t *fn_key, const Allocator *allocator) {
+Trie *Trie_new(const uint32_t key_size, key_t *fn_key, const Allocator *allocator) {
   if (!key_size || !fn_key) { return nullptr; }
   TrieNode *node = allocator->calloc(1, sizeof(TrieNode));
   Trie *tree = allocator->calloc(1, sizeof(Trie));
@@ -140,12 +140,4 @@ void Trie_destroy(Trie *tree) {
   if (!tree) { return; }
   delTrieNode(tree->root, tree->allocator);
   tree->allocator->free(tree);
-}
-
-uint64_t char2u64(const char *key) {
-  return *key;
-}
-
-uint64_t refer2u64(const REFER(void) *key) {
-  return (uint64_t) *key;
 }

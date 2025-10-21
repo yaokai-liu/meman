@@ -8,14 +8,14 @@
 #ifndef LIU_SET_H
 #define LIU_SET_H
 
-#include "allocator.h"
 #include <stdint.h>
-typedef uint64_t unikey_t(const void *);
+#include "allocator.h"
+#include "key_t.h"
 
 typedef struct Set Set;
 extern const uint32_t sizeof_set;
 
-Set *Set_new(uint32_t ele_size, uint32_t set_id, unikey_t *fn_key,
+Set *Set_new(uint32_t ele_size, uint32_t set_id, key_t *fn_key,
              destruct_t *fn_release, const Allocator *allocator);
 
 uint32_t Set_add(Set *set, const void * v_ele);

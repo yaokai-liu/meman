@@ -14,14 +14,14 @@ typedef struct Set {
   Array *keys;
   Array *elements;
   AVLTree *key_tree;
-  unikey_t *fn_key;
+  key_t *fn_key;
   uint32_t set_id;
   uint32_t ele_size;
   destruct_t *fn_release;
 } Set;
 const uint32_t sizeof_set = sizeof(Set);
 
-inline Set *Set_new(uint32_t ele_size, uint32_t set_id, unikey_t *fn_key,
+inline Set *Set_new(uint32_t ele_size, uint32_t set_id, key_t *fn_key,
                     destruct_t *fn_release, const Allocator *allocator) {
   Set *set = allocator->calloc(1, sizeof(Set));
   set->allocator = allocator;

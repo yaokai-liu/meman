@@ -9,9 +9,9 @@
 #define LIU_DICT_H
 
 
-#include "allocator.h"
 #include <stdint.h>
-typedef uint64_t key_t(const void *);
+#include "allocator.h"
+#include "key_t.h"
 
 typedef struct Dict Dict;
 
@@ -41,7 +41,5 @@ void * Dict_get(const Dict *dict, const void *key);
 void Dict_tidy(Dict *dict);
 void Dict_reset(Dict *dict);
 void Dict_destroy(Dict *dict);
-
-uint64_t refer2u64(REFER(void) *key);
 
 #endif //LIU_DICT_H

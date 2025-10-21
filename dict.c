@@ -16,7 +16,7 @@ typedef struct Dict {
   Array *keys;
   Array *eles;
   AVLTree *map_tree;
-  unikey_t *fn_key;
+  key_t *  fn_key;
   uint32_t dict_id;
   uint32_t key_size;
   uint32_t ele_size;
@@ -162,6 +162,6 @@ inline void *Dict_elements(Dict *dict) {
   return Array_first_real(dict->eles);
 }
 
-uint64_t refer2u64(REFER(void) *key) {
+uint64_t refer2u64(const REFER(void) *key) {
   return (uint64_t) *key;
 }
