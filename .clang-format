@@ -50,7 +50,7 @@ PPIndentWidth: -1
 PointerAlignment: Right
 QualifierAlignment: Left
 ReferenceAlignment: Pointer
-ReflowComments: true
+ReflowComments: IndentOnly
 SortIncludes: CaseSensitive
 SpaceAfterCStyleCast: true
 SpaceAfterLogicalNot: false

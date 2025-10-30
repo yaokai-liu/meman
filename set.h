@@ -18,14 +18,14 @@ extern const uint32_t sizeof_set;
 Set *Set_new(uint32_t ele_size, uint32_t set_id, key_t *fn_key,
              destruct_t *fn_release, const Allocator *allocator);
 
-uint32_t Set_add(Set *set, const void * v_ele);
+uint32_t Set_add(const Set *set, const void * v_ele);
 
 // Notice: after remove elements, must tidy the set before access its data
-uint32_t Set_remove(Set *set, const void * v_ele);
+uint32_t Set_remove(const Set *set, const void * v_ele);
 
 // dest = dest | set
 // @return: count of adds
-uint32_t Set_update(Set *dest, const Set *set);
+uint32_t Set_update(const Set *dest, const Set *set);
 // set = set - red
 // @return: count of removes
 uint32_t Set_reduce(Set *set, const Set *red);
@@ -33,12 +33,12 @@ uint32_t Set_reduce(Set *set, const Set *red);
 // @return: count of removes
 uint32_t Set_limit(Set *set, const Set *lim);
 
-void * Set_data(Set *set);
-uint32_t Set_count(Set *set);
+void * Set_data(const Set *set);
+uint32_t Set_count(const Set *set);
 bool Set_has(const Set *set, const void * ele);
 
 void Set_tidy(Set *set);
-void Set_reset(Set *set);
+void Set_reset(const Set *set);
 void Set_destroy(Set *set);
 
 #endif  // LIU_SET_H

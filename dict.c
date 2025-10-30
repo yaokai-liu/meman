@@ -6,10 +6,30 @@
  **/
 
 #include "dict.h"
+
+#include <stdio.h>
+
 #include "array.h"
 #include "avl-tree.h"
 #include "set.h"
 
+#define p_key (keys + i * dict->key_size)
+
+#define remove_item(p_key, inverse) do {                                            \
+  const uint64_t MACRO_remove_item_LOCAL_VAR_i_key =                                \
+                    dict->fn_key ? dict->fn_key((p_key)) : (uint64_t) (p_key);      \
+  REFER(void) MACRO_remove_item_LOCAL_VAR_v_ele =                                   \
+                  AVLTree_get(dict->map_tree, MACRO_remove_item_LOCAL_VAR_i_key);   \
+  if ((!MACRO_remove_item_LOCAL_VAR_v_ele) != inverse)                              \
+    { goto MACRO_remove_item_LOCAL_LABEL_0; }                                       \
+  if (dict->fn_rel_key) { dict->fn_rel_key((void *) (p_key), dict->allocator); }    \
+  if (dict->fn_rel_ele) {                                                           \
+    void *element = Array_virt2real(dict->eles, MACRO_remove_item_LOCAL_VAR_v_ele); \
+    dict->fn_rel_ele(element, dict->allocator);                                     \
+  }                                                                                 \
+  AVLTree_set(dict->map_tree, MACRO_remove_item_LOCAL_VAR_i_key, nullptr);          \
+MACRO_remove_item_LOCAL_LABEL_0:                                                    \
+} while (false)
 
 typedef struct Dict {
   const Allocator *allocator;
@@ -26,7 +46,7 @@ typedef struct Dict {
 } Dict;
 
 inline Dict *
-Dict_new(uint32_t key_size, uint32_t ele_size, key_t *fn_key, uint32_t dict_id,
+Dict_new(const uint32_t key_size, const uint32_t ele_size, key_t *fn_key, const uint32_t dict_id,
          destruct_t *fn_rel_key, destruct_t *fn_rel_ele, const Allocator *allocator) {
   if (!ele_size) { return nullptr; }
   Dict *dict = allocator->calloc(1, sizeof(Dict));
@@ -43,8 +63,8 @@ Dict_new(uint32_t key_size, uint32_t ele_size, key_t *fn_key, uint32_t dict_id,
   return dict;
 }
 
-inline void Dict_set(Dict *dict, const void *key, const void *ele) {
-  uint64_t i_key = dict->fn_key ? dict->fn_key(key) : (uint64_t) key;
+inline void Dict_set(const Dict *dict, const void *key, const void *ele) {
+  const uint64_t i_key = dict->fn_key ? dict->fn_key(key) : (uint64_t) key;
   REFER(void) v_element = AVLTree_get(dict->map_tree, i_key);
   if (!v_element) {
     Array_append(dict->keys, key, 1);
@@ -57,41 +77,43 @@ inline void Dict_set(Dict *dict, const void *key, const void *ele) {
   }
 }
 
-inline uint32_t Dict_remove(Dict *dict, const void *keys[], uint32_t count) {
-  for (uint32_t i = 0; i < count; i++) {
-    uint64_t i_key = dict->fn_key ? dict->fn_key(keys[i]) : (uint64_t) keys[i];
-    REFER(void) v_element = AVLTree_get(dict->map_tree, i_key);
-    if (!v_element) { continue; }
-    if (dict->fn_rel_key) { dict->fn_rel_key((void *) keys[i], dict->allocator); }
+inline uint32_t Dict_remove(Dict *dict, const void *keys[], const uint32_t n_keys) {
+  uint32_t count = 0;
+  for (uint32_t i = 0; i < n_keys; i++) {
+    const uint64_t i_key = dict->fn_key ? dict->fn_key(p_key) : (uint64_t) p_key;
+    const void *v_ele = AVLTree_get(dict->map_tree, i_key);
+    if (!v_ele) { continue; }
+    if (dict->fn_rel_key) { dict->fn_rel_key((void *) p_key, dict->allocator); }
     if (dict->fn_rel_ele) {
-      void *element = Array_virt2real(dict->eles, v_element);
+      void *element = Array_virt2real(dict->eles, v_ele);
       dict->fn_rel_ele(element, dict->allocator);
     }
     AVLTree_set(dict->map_tree, i_key, nullptr);
+    count++;
   }
-  dict->tidied = false;
+  dict->tidied = count == 0 ? dict->tidied : false;
   return count;
 }
 
 inline void *Dict_get(const Dict *dict, const void *key) {
-  uint64_t i_key = dict->fn_key ? dict->fn_key(key) : (uint64_t) key;
+  const uint64_t i_key = dict->fn_key ? dict->fn_key(key) : (uint64_t) key;
   const REFER(void) v_ele = AVLTree_get(dict->map_tree, i_key);
   return Array_virt2real(dict->eles, v_ele);
 }
 
-inline uint32_t Dict_update(Dict *dest, const Dict *dict, bool override) {
+inline uint32_t Dict_update(Dict *dest, const Dict *dict, bool cover_update) {
   if (dict->fn_key != dest->fn_key) { return 0; }
   if (dict->key_size != dest->key_size) { return 0; }
   if (dict->ele_size != dest->ele_size) { return 0; }
   uint32_t updated = 0;
-  uint32_t old_count = Array_length(dest->keys);
+  const uint32_t old_count = Array_length(dest->keys);
   Array_concat(dest->keys, dict->keys);
   Array_concat(dest->eles, dict->eles);
   const uint32_t new_count = Array_length(dest->keys);
   const void *const keys = Array_first_real(dest->keys);
   for (uint32_t i = old_count; i < new_count; i++) {
-    uint64_t i_key = dest->fn_key((keys + i * dest->key_size));
-    if (!override && AVLTree_get(dest->map_tree, i_key)) { continue; }
+    const uint64_t i_key = dest->fn_key((keys + i * dest->key_size));
+    if (!cover_update && AVLTree_get(dest->map_tree, i_key)) { continue; }
     REFER(void) v_element = AVLTree_get(dict->map_tree, i_key);
     if (v_element) {
       AVLTree_set(dest->map_tree, i_key, v_element + old_count);
@@ -99,6 +121,48 @@ inline uint32_t Dict_update(Dict *dest, const Dict *dict, bool override) {
     }
   }
   return updated;
+}
+
+uint32_t Dict_reduce(Dict *dict, const Dict *red) {
+  if (dict->key_size != red->key_size) { return 0; }
+  const uint32_t n_keys = Array_length(dict->keys);
+  const void *const keys = Array_first_real(dict->keys);
+  uint32_t count = 0;
+  for (uint32_t i = 0; i < n_keys; i++) {
+    const uint64_t i_key = red->fn_key ? red->fn_key(p_key) : (uint64_t) p_key;
+    const void *v_ele = AVLTree_get(red->map_tree, i_key);
+    if (!v_ele) { continue; }
+    if (dict->fn_rel_key) { dict->fn_rel_key((void *) p_key, dict->allocator); }
+    if (dict->fn_rel_ele) {
+      void *element = Array_virt2real(dict->eles, v_ele);
+      dict->fn_rel_ele(element, dict->allocator);
+    }
+    AVLTree_set(dict->map_tree, i_key, nullptr);
+    count++;
+  }
+  dict->tidied = count == 0 ? dict->tidied : false;
+  return count;
+}
+
+uint32_t Dict_limit(Dict *dict, const Dict *lim) {
+  if (dict->key_size != lim->key_size) { return 0; }
+  const uint32_t n_keys = Array_length(dict->keys);
+  const void *const keys = Array_first_real(dict->keys);
+  uint32_t count = 0;
+  for (uint32_t i = 0; i < n_keys; i++) {
+    const uint64_t i_key = lim->fn_key ? lim->fn_key(p_key) : (uint64_t) p_key;
+    const void *v_ele = AVLTree_get(lim->map_tree, i_key);
+    if (!v_ele) { continue; }
+    if (dict->fn_rel_key) { dict->fn_rel_key((void *) p_key, dict->allocator); }
+    if (dict->fn_rel_ele) {
+      void *element = Array_virt2real(dict->eles, v_ele);
+      dict->fn_rel_ele(element, dict->allocator);
+    }
+    AVLTree_set(dict->map_tree, i_key, nullptr);
+    count++;
+  }
+  dict->tidied = count == 0 ? dict->tidied : false;
+  return count;
 }
 
 inline void Dict_tidy(Dict *dict) {

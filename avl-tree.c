@@ -25,7 +25,7 @@ typedef struct AVLTree {
 
 const size_t sizeof_avltree = sizeof(AVLTree);
 
-static AVLNode *AVLNode_new(uint64_t key, AVLTree *tree);
+static AVLNode *AVLNode_new(uint64_t key, const AVLTree *tree);
 static AVLNode *AVLNode_get(AVLNode *root, uint64_t key, const AVLTree *tree);
 static AVLNode *AVLNode_add(AVLNode **root, uint64_t key, AVLTree *tree);
 static void AVLNode_del(AVLNode *root, destruct_t *del_content, AVLTree *tree);
@@ -81,7 +81,7 @@ inline void AVLNode_del(AVLNode *root, destruct_t *del_content, AVLTree *tree) {
   tree->allocator->free(root);
 }
 
-inline AVLNode *AVLNode_new(const uint64_t key, AVLTree *tree) {
+inline AVLNode *AVLNode_new(const uint64_t key, const AVLTree *tree) {
   AVLNode *node = tree->allocator->calloc(1, sizeof(AVLNode));
   node->key = key;
   return node;
@@ -106,37 +106,42 @@ inline AVLNode *AVLNode_get(AVLNode *root, uint64_t key, const AVLTree *tree) {
 }
 
 #define max(_a, _b) ((_a) > (_b) ? (_a) : (_b))
-#define LL_rotate(_pNode)                                                                         \
-  do {                                                                                            \
-    AVLNode *temp = *_pNode;                                                                      \
-    *_pNode = temp->left;                                                                         \
-    temp->left = (*_pNode)->right;                                                                \
-    (*_pNode)->right = temp;                                                                      \
-    uint64_t tlh = temp->left ? temp->left->height + 1 : 0;                                       \
-    uint64_t trh = temp->right ? temp->right->height + 1 : 0;                                     \
-    temp->height = max(tlh, trh);                                                                 \
-    (*_pNode)->height = max((*_pNode)->left ? (*_pNode)->left->height + 1 : 0, temp->height + 1); \
+#define LL_rotate(_pNode)                                       \
+  do {                                                          \
+    AVLNode *temp = *(_pNode);                                  \
+    *(_pNode) = temp->left;                                     \
+    temp->left = (*(_pNode))->right;                            \
+    (*(_pNode))->right = temp;                                  \
+    uint64_t tlh = temp->left ? temp->left->height + 1 : 0;     \
+    uint64_t trh = temp->right ? temp->right->height + 1 : 0;   \
+    temp->height = max(tlh, trh);                               \
+    (*(_pNode))->height = max(                                  \
+        (*(_pNode))->left ? (*(_pNode))->left->height + 1 : 0,  \
+        temp->height + 1                                        \
+    );                                                          \
   } while (0)
-#define RR_rotate(_pNode)                                                             \
-  do {                                                                                \
-    AVLNode *temp = *_pNode;                                                          \
-    *_pNode = temp->right;                                                            \
-    temp->right = (*_pNode)->left;                                                    \
-    (*_pNode)->left = temp;                                                           \
-    uint64_t tlh = temp->left ? temp->left->height + 1 : 0;                           \
-    uint64_t trh = temp->right ? temp->right->height + 1 : 0;                         \
-    temp->height = max(tlh, trh);                                                     \
-    (*_pNode)->height =                                                               \
-      1 + max((*_pNode)->right ? (*_pNode)->right->height + 1 : 0, temp->height + 1); \
+#define RR_rotate(_pNode)                                     \
+  do {                                                        \
+    AVLNode *temp = *(_pNode);                                \
+    *(_pNode) = temp->right;                                  \
+    temp->right = (*(_pNode))->left;                          \
+    (*(_pNode))->left = temp;                                 \
+    uint64_t tlh = temp->left ? temp->left->height + 1 : 0;   \
+    uint64_t trh = temp->right ? temp->right->height + 1 : 0; \
+    temp->height = max(tlh, trh);                             \
+    (*(_pNode))->height = 1 + max((*(_pNode))->right          \
+                        ? (*(_pNode))->right->height + 1      \
+                        : 0, temp->height + 1);               \
   } while (0)
 
-#define setNode(node)                                                                \
-  do {                                                                               \
-    int32_t cmp = tree->fn_cmp ? tree->fn_cmp((void *) key, (void *) (*root)->key) : \
-                                 (int32_t) (key - (*root)->key);                     \
-    if (cmp == 0) { return *root; }                                                  \
-    AVLNode **pNode = (cmp < 0) ? &((*root)->left) : &((*root)->right);              \
-    node = AVLNode_add(pNode, key, tree);                                            \
+#define setNode(node)                                                   \
+  do {                                                                  \
+    int32_t cmp = tree->fn_cmp                                          \
+                ? tree->fn_cmp((void *) key, (void *) (*root)->key)     \
+                : (int32_t) (key - (*root)->key);                       \
+    if (cmp == 0) { return *root; }                                     \
+    AVLNode **pNode = (cmp < 0) ? &((*root)->left) : &((*root)->right); \
+    node = AVLNode_add(pNode, key, tree);                               \
   } while (false)
 
 inline AVLNode *AVLNode_add(AVLNode **root, const uint64_t key, AVLTree *tree) {

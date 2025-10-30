@@ -35,8 +35,8 @@ inline Set *Set_new(uint32_t ele_size, uint32_t set_id, key_t *fn_key,
   return set;
 }
 
-inline uint32_t Set_add(Set *set, const void *ele) {
-  uint64_t key = set->fn_key ? set->fn_key(ele) : (uint64_t) ele;
+inline uint32_t Set_add(const Set *set, const void *ele) {
+  const uint64_t key = set->fn_key ? set->fn_key(ele) : (uint64_t) ele;
   REFER(void) v_element = AVLTree_get(set->key_tree, key);
   if (!v_element) {
     Array_append(set->keys, &key, 1);
@@ -48,8 +48,8 @@ inline uint32_t Set_add(Set *set, const void *ele) {
   return 0;
 }
 
-inline uint32_t Set_remove(Set *set, const void *ele) {
-  uint64_t key = set->fn_key ? set->fn_key(ele) : (uint64_t) ele;
+inline uint32_t Set_remove(const Set *set, const void *ele) {
+  const uint64_t key = set->fn_key ? set->fn_key(ele) : (uint64_t) ele;
   REFER(void) v_element = AVLTree_get(set->key_tree, key);
   if (!v_element) { return 0; }
   AVLTree_set(set->key_tree, key, nullptr);
@@ -57,11 +57,11 @@ inline uint32_t Set_remove(Set *set, const void *ele) {
 }
 
 inline bool Set_has(const Set *set, const void *ele) {
-  uint64_t key = set->fn_key ? set->fn_key(ele) : (uint64_t) ele;
+  const uint64_t key = set->fn_key ? set->fn_key(ele) : (uint64_t) ele;
   return AVLTree_get(set->key_tree, key) ? 1 : 0;
 }
 
-inline uint32_t Set_update(Set *dest, const Set *set) {
+inline uint32_t Set_update(const Set *dest, const Set *set) {
   if (set->ele_size != dest->ele_size) { return 0; }
   uint32_t updated = 0;
   const REFER(void) *refers = Array_first_real(set->elements);
@@ -118,7 +118,7 @@ inline void Set_tidy(Set *set) {
   set->key_tree = new_key_tree;
 }
 
-inline void Set_reset(Set *set) {
+inline void Set_reset(const Set *set) {
   releasePrimeArray(set->keys);
   if (set->fn_release) {
     Array_reset(set->elements, set->fn_release);
@@ -134,10 +134,10 @@ inline void Set_destroy(Set *set) {
   set->allocator->free(set);
 }
 
-inline uint32_t Set_count(Set *set) {
+inline uint32_t Set_count(const Set *set) {
   return Array_length(set->elements);
 }
 
-inline void *Set_data(Set *set) {
+inline void *Set_data(const Set *set) {
   return Array_first_real(set->elements);
 }

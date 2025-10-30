@@ -18,14 +18,14 @@ typedef struct Dict Dict;
 Dict * Dict_new(uint32_t key_size, uint32_t ele_size, key_t *fn_key, uint32_t dict_id,
                 destruct_t *fn_rel_key, destruct_t *fn_rel_ele, const Allocator *allocator);
 
-void Dict_set(Dict *dict, const void *key, const void *ele);
+void Dict_set(const Dict *dict, const void *key, const void *ele);
 
 // Notice: after remove elements, must tidy the dict before access its data
 uint32_t Dict_remove(Dict *dict, const void *keys[], uint32_t count);
 
 // dest = dest | dict
 // @return: count of adds
-uint32_t Dict_update(Dict *dest, const Dict *dict, bool override);
+uint32_t Dict_update(Dict *dest, const Dict *dict, bool cover_update);
 // dict = dict - red
 // @return: count of removes
 uint32_t Dict_reduce(Dict *dict, const Dict *red);

@@ -84,7 +84,7 @@ inline void *Array_virt2real(const Array *array, const void *vert_addr) {
 #define last_ptr       (array->elements + array->ele_size * array->used_len)
 #define extend_to_aligned(count)                                                 \
   do {                                                                           \
-    if (count >= array->alloc_len) {                                             \
+    if ((count) >= array->alloc_len) {                                           \
       uint32_t alloc_size = aligned(count) * array->ele_size;                    \
       uint32_t new_size = (aligned(count) - array->alloc_len) * array->ele_size; \
       void *p = array->allocator->realloc(array->elements, alloc_size);          \
