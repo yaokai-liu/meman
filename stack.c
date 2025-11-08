@@ -59,6 +59,7 @@ inline uint32_t Stack_push(Stack *stack, const void *data, const uint32_t size) 
 }
 
 inline uint32_t Stack_pop(Stack *stack, void *dest, uint32_t size) {
+  if (stack->used < size) { return 0; }
   size = min(stack->used, size);
   stack->used -= size;
   if (dest) { memcpy(dest, stack->stack + stack->used, size); }

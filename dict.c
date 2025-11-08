@@ -56,6 +56,7 @@ Dict_new(const uint32_t key_size, const uint32_t ele_size, key_t *fn_key, const 
   dict->map_tree = AVLTree_new(allocator, nullptr);
   dict->fn_key = fn_key;
   dict->dict_id = dict_id;
+  dict->key_size = key_size;
   dict->ele_size = ele_size;
   dict->fn_rel_key = fn_rel_key;
   dict->fn_rel_ele = fn_rel_ele;
