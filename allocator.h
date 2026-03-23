@@ -12,7 +12,7 @@
 
 #define REFER(T) /*VirtAddr*/ T *
 
-typedef struct {
+typedef struct Allocator {
   void *(* const malloc)(size_t size);
 
   void *(* const realloc)(void *ptr, size_t size);
