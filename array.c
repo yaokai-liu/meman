@@ -145,6 +145,18 @@ inline uint32_t Array_concat(Array *restrict dest, const Array *restrict src) {
   return Array_append(dest, src->elements, src->used_len);
 }
 
+inline uint32_t Array_insert_array(Array *restrict dest, const uint32_t index, const Array *restrict src) {
+  return Array_insert(dest, index, src->elements, src->used_len);
+}
+
+inline Array * Array_clear_new(const Array *restrict template_array, const void *elements, const uint32_t count) {
+  Array *new_array = Array_new(template_array->ele_size, template_array->array_id, template_array->allocator);
+  if (elements) {
+    for (uint32_t i = 0; i < count; i ++) { Array_append(new_array, elements, 1); }
+  }
+  return new_array;
+}
+
 inline bool Array_any(const Array *array, bool (*fn_judgment)(void *)) {
   bool judge = false;
   for (uint32_t i = 0; i < array->used_len; i++) {

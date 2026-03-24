@@ -47,6 +47,10 @@ uint32_t Array_insert(Array *array, uint32_t index, const void *elements, uint32
 uint32_t Array_delete(Array *array, uint32_t index, uint32_t count);
 
 uint32_t Array_concat(Array *restrict dest, const Array *restrict src);
+
+uint32_t Array_insert_array(Array *restrict dest, uint32_t index, const Array *restrict src);
+
+Array * Array_clear_new(const Array *restrict template_array, const void *elements, uint32_t count);
 // Promised that every element would be detected with `fn_judgment`.
 // So that for traversing elements.
 bool Array_any(const Array *array, bool (*fn_judgment)(void *));
