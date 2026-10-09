@@ -16,14 +16,17 @@ struct Stack {
   const Allocator *allocator;
 };
 
-#define ALLOC_LEN (32 * sizeof(void *))
+#ifndef ALLOC_LEN
+#define ALLOC_LEN 32
+#endif
+#define ALLOC_SIZE (ALLOC_LEN * sizeof(void *))
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
 inline Stack *Stack_new(const Allocator *allocator) {
   Stack *stack = allocator->malloc(sizeof(Stack));
   stack->allocator = allocator;
-  stack->stack = allocator->malloc(ALLOC_LEN);
-  stack->allocated = ALLOC_LEN;
+  stack->stack = allocator->malloc(ALLOC_SIZE);
+  stack->allocated = ALLOC_SIZE;
   stack->used = 0;
   return stack;
 }
@@ -47,7 +50,7 @@ inline void Stack_clear(Stack *stack) {
 inline uint32_t Stack_push(Stack *stack, const void *data, const uint32_t size) {
   if (!data || !size) { return 0; }
   if (stack->used + size >= stack->allocated) {
-    const uint32_t length = ((stack->used + size) / ALLOC_LEN + 1) * ALLOC_LEN;
+    const uint32_t length = ((stack->used + size) / ALLOC_SIZE + 1) * ALLOC_SIZE;
     void *p = stack->allocator->realloc(stack->stack, length);
     if (!p) { return -1; }
     stack->stack = p;

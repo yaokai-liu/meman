@@ -20,7 +20,9 @@ struct Array {
 
 const size_t sizeof_array = sizeof(Array);
 
+#ifndef ALLOC_LEN
 #define ALLOC_LEN 32
+#endif
 
 Array *Array_new(const uint32_t ele_size, const uint32_t id, const Allocator * const allocator) {
   if (ele_size == 0) { return nullptr; }
