@@ -9,7 +9,6 @@
 #define LIU_ARRAY_H
 
 #include "allocator.h"
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -44,7 +43,7 @@ uint32_t Array_append(Array *array, const void *elements, uint32_t count);
 
 uint32_t Array_insert(Array *array, uint32_t index, const void *elements, uint32_t count);
 
-uint32_t Array_delete(Array *array, uint32_t index, uint32_t count);
+uint32_t Array_delete(Array *array, uint32_t index, uint32_t count, bool shrink);
 
 uint32_t Array_concat(Array *restrict dest, const Array *restrict src);
 
@@ -62,7 +61,7 @@ uint32_t Array_filter(Array *origin_array, bool (*fn_judgment)(const void *));
 // Filter an array by fn_judgment. The origin_array will not be clean and destroy.
 Array *Array_filtered(const Array *origin_array, bool (*fn_judgment)(const void *));
 
-uint32_t Array_resize(Array *array, uint32_t resize, destruct_t *fn_free);
+uint32_t Array_resize(Array *array, uint32_t resize, destruct_t *fn_free, bool shrink);
 
 // Clear array and free all element with `fn_free`.
 uint32_t Array_clear(Array *array, destruct_t *fn_free);

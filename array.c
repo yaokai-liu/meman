@@ -6,8 +6,7 @@
  **/
 
 #include "array.h"
-#include "allocator.h"
-#include <stdint.h>
+#include "_meman_builtin_.h"
 
 struct Array {
   const Allocator *allocator;
@@ -23,6 +22,10 @@ const size_t sizeof_array = sizeof(Array);
 #ifndef ALLOC_LEN
 #define ALLOC_LEN 32
 #endif
+#ifndef ARRAY_ALLOC_SCALE
+#define ARRAY_ALLOC_SCALE 1
+#endif
+#define ARRAY_ALLOC_LEN  (ARRAY_ALLOC_SCALE * ALLOC_LEN)
 
 Array *Array_new(const uint32_t ele_size, const uint32_t id, const Allocator * const allocator) {
   if (ele_size == 0) { return nullptr; }
@@ -82,7 +85,7 @@ inline void *Array_virt2real(const Array *array, const void *vert_addr) {
   return Array_real_addr(array, index);
 }
 
-#define aligned(count) (((count) / ALLOC_LEN + 1) * ALLOC_LEN)
+#define aligned(count) (((count) / ARRAY_ALLOC_LEN + 1) * ARRAY_ALLOC_LEN)
 #define last_ptr       (array->elements + array->ele_size * array->used_len)
 #define extend_to_aligned(count)                                                 \
   do {                                                                           \
@@ -96,7 +99,19 @@ inline void *Array_virt2real(const Array *array, const void *vert_addr) {
       array->allocator->memset(last_ptr, 0, new_size);                           \
     }                                                                            \
   } while (false)
-
+#define shrink_to_used(array)                                                           \
+  do {                                                                                  \
+    if ((array)->used_len < (array)->alloc_len / 4) {                                   \
+      uint32_t alloc_len = min(aligned((array)->used_len) * 2, (array)->alloc_len / 2); \
+      uint32_t new_size = (alloc_len - (array)->used_len) * (array)->ele_size;          \
+      uint32_t alloc_size = alloc_len * (array)->ele_size;                              \
+      void *p = (array)->allocator->realloc((array)->elements, alloc_size);             \
+      if (!p) { return -1; }                                                            \
+      (array)->elements = p;                                                            \
+      (array)->alloc_len = alloc_len;                                                   \
+      (array)->allocator->memset(last_ptr, 0, new_size);                                \
+    }                                                                                   \
+  } while (false)
 inline uint32_t Array_append(Array *array, const void *elements, const uint32_t count) {
   if (count == 0) { return 0; }
   extend_to_aligned(array->used_len + count);
@@ -105,7 +120,7 @@ inline uint32_t Array_append(Array *array, const void *elements, const uint32_t 
   return count;
 }
 
-uint32_t Array_insert(Array *array, uint32_t index, const void *elements, uint32_t count) {
+uint32_t Array_insert(Array *array, const uint32_t index, const void *elements, uint32_t count) {
   if (count == 0) { return 0; }
   if (index > array->used_len) { return 0; }
   uint32_t n_move = array->used_len - index;
@@ -124,7 +139,7 @@ uint32_t Array_insert(Array *array, uint32_t index, const void *elements, uint32
 
 #define min(a, b) ((a < b) ? (a) : (b))
 
-inline uint32_t Array_delete(Array *array, uint32_t index, uint32_t count) {
+inline uint32_t Array_delete(Array *array, const uint32_t index, uint32_t count, bool shrink) {
   if (index >= array->used_len) { return 0; }
   count = min(count, array->used_len - index);
   if (count == 0) { return 0; }
@@ -140,6 +155,7 @@ inline uint32_t Array_delete(Array *array, uint32_t index, uint32_t count) {
   array->allocator->memcpy(dest, buffer, count * array->ele_size);
   array->allocator->free(buffer);
   array->used_len -= count;
+  if (shrink) { shrink_to_used(array); }
   return count;
 }
 
@@ -198,7 +214,7 @@ inline Array *Array_filtered(const Array *origin_array, bool (*fn_judgment)(cons
   return filtered_array;
 }
 
-uint32_t Array_resize(Array *array, uint32_t resize, destruct_t *fn_free) {
+uint32_t Array_resize(Array *array, const uint32_t resize, destruct_t *fn_free, const bool shrink) {
   if (resize == array->used_len) { return 0; }
   extend_to_aligned(resize);
   if (resize < array->used_len && fn_free) {
@@ -207,8 +223,9 @@ uint32_t Array_resize(Array *array, uint32_t resize, destruct_t *fn_free) {
       fn_free(ele, array->allocator);
     }
   }
-  uint32_t count = resize - array->used_len;
-  array->used_len = resize;
+  const uint32_t count = resize - array->used_len;
+  array->used_len = min(array->used_len, resize);
+  if (shrink) { shrink_to_used(array); }
   return count;
 }
 

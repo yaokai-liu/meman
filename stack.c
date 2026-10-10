@@ -10,23 +10,26 @@
 #include <string.h>
 
 struct Stack {
+  const Allocator *allocator;
   uint32_t allocated;
   uint32_t used;
   void *stack;
-  const Allocator *allocator;
 };
 
 #ifndef ALLOC_LEN
 #define ALLOC_LEN 32
 #endif
-#define ALLOC_SIZE (ALLOC_LEN * sizeof(void *))
+#ifndef STACK_ALLOC_SCALE
+#define STACK_ALLOC_SCALE 1
+#endif
+#define STACK_ALLOC_SIZE (ALLOC_LEN * STACK_ALLOC_SCALE * sizeof(void *))
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
 inline Stack *Stack_new(const Allocator *allocator) {
   Stack *stack = allocator->malloc(sizeof(Stack));
   stack->allocator = allocator;
-  stack->stack = allocator->malloc(ALLOC_SIZE);
-  stack->allocated = ALLOC_SIZE;
+  stack->stack = allocator->malloc(STACK_ALLOC_SIZE);
+  stack->allocated = STACK_ALLOC_SIZE;
   stack->used = 0;
   return stack;
 }
@@ -50,7 +53,7 @@ inline void Stack_clear(Stack *stack) {
 inline uint32_t Stack_push(Stack *stack, const void *data, const uint32_t size) {
   if (!data || !size) { return 0; }
   if (stack->used + size >= stack->allocated) {
-    const uint32_t length = ((stack->used + size) / ALLOC_SIZE + 1) * ALLOC_SIZE;
+    const uint32_t length = ((stack->used + size) / STACK_ALLOC_SIZE + 1) * STACK_ALLOC_SIZE;
     void *p = stack->allocator->realloc(stack->stack, length);
     if (!p) { return -1; }
     stack->stack = p;
