@@ -6,7 +6,6 @@
  **/
 
 #include "array.h"
-#include "_meman_builtin_.h"
 
 struct Array {
   const Allocator *allocator;

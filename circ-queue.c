@@ -8,7 +8,6 @@
 #include "circ-queue.h"
 
 #include "array.h"
-#include "_meman_builtin_.h"
 
 typedef struct CircQueue /*extend Array*/ {
   const Allocator *allocator;
