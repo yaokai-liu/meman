@@ -25,17 +25,4 @@ uint32_t CircQueue_pop_array(CircQueue *queue, void *dest, uint32_t count);
 uint32_t CircQueue_push(CircQueue *queue, const void *element);
 uint32_t CircQueue_pop(CircQueue *queue, void *dest);
 
-void *CircQueue_head_virt(const CircQueue *queue);
-void *CircQueue_head_real(const CircQueue *queue);
-void *CircQueue_tail_virt(const CircQueue *queue);
-void *CircQueue_tail_real(const CircQueue *queue);
-
-enum CIRC_QUEUE_SEED_ENUM : uint32_t {
-  CIRC_QUEUE_SEED_NULL = 0,
-  CIRC_QUEUE_SEED_HEAD,
-  CIRC_QUEUE_SEED_TAIL
-};
-void *CircQueue_offs_virt(const CircQueue *queue, uint32_t seed, uint32_t offset);
-void *CircQueue_offs_real(const CircQueue *queue, uint32_t seed, uint32_t offset);
-
 #endif //LIU_CIRC_QUEUE_H

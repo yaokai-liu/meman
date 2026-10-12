@@ -1,7 +1,7 @@
 #BasedOnStyle: GNU
 Language: Cpp
 ColumnLimit: 100
-AlignAfterOpenBracket: BlockIndent
+AlignAfterOpenBracket: true
 AlignArrayOfStructures: Left
 AlignConsecutiveAssignments: false
 AlignConsecutiveBitFields: Consecutive
@@ -21,7 +21,7 @@ AllowShortIfStatementsOnASingleLine: WithoutElse
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
 BinPackArguments: true
-BinPackParameters: true
+BinPackParameters: BinPack
 BitFieldColonSpacing: Both
 BreakArrays: true
 BreakBeforeBraces: Attach
@@ -72,7 +72,6 @@ SpacesInLineCommentPrefix:
   Minimum: 1
 StatementMacros:
   - fn_try_keyword
-  - add_test_for
 TabWidth: 2
 UseCRLF: false
 UseTab: Never

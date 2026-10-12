@@ -32,7 +32,8 @@ const size_t sizeof_circ_queue = sizeof(CircQueue);
 
 static uint32_t CircQueue_extend_more_than(CircQueue *queue, uint32_t resize);
 static void *CircQueue_real_addr(const CircQueue *queue, uint32_t index);
-static void *CircQueue_virt_addr(const CircQueue *queue, uint32_t index);
+static void *CircQueue_head_real(const CircQueue *queue);
+static void *CircQueue_tail_real(const CircQueue *queue);
 
 CircQueue *CircQueue_new(const uint32_t ele_size, const uint32_t id, const Allocator * const allocator) {
   if (id == 0) { return nullptr; }
@@ -119,7 +120,7 @@ inline uint32_t CircQueue_push_array(CircQueue *queue, const void *elements, con
 inline uint32_t CircQueue_pop_array(CircQueue *queue, void *dest, uint32_t count) {
   count = min(queue->count, count);
   if (!count) { return 0; }
-  if (queue->head <= queue->tail) {
+  if (queue->head < queue->tail) {
     const uint32_t move_size = (queue->tail - queue->head) * queue->ele_size;
     queue->allocator->memcpy(dest, CircQueue_head_real(queue), move_size);
   } else {
@@ -139,40 +140,10 @@ inline void *CircQueue_real_addr(const CircQueue *queue, const uint32_t index) {
   return (void *) queue->elements + queue->ele_size * index;
 }
 
-inline void *CircQueue_virt_addr(const CircQueue *queue, const uint32_t index) {
-  if (index >= queue->length) { return nullptr; }
-  const uint64_t id = ((uint64_t) queue->queue_id) << 32;
-  return (void *) (id | index);
-}
-
-inline void *CircQueue_head_virt(const CircQueue *queue) {
-  return CircQueue_virt_addr(queue, queue->head);
-}
-
 inline void *CircQueue_head_real(const CircQueue *queue) {
   return CircQueue_real_addr(queue, queue->head);
 }
 
-inline void *CircQueue_tail_virt(const CircQueue *queue) {
-  return CircQueue_virt_addr(queue, queue->tail);
-}
-
 inline void *CircQueue_tail_real(const CircQueue *queue) {
   return CircQueue_real_addr(queue, queue->tail);
-}
-
-inline void *CircQueue_offs_virt(const CircQueue *queue, const uint32_t seed, const uint32_t offset) {
-  switch (seed) {
-    case CIRC_QUEUE_SEED_HEAD: { return CircQueue_virt_addr(queue, (queue->head + offset) % queue->length); }
-    case CIRC_QUEUE_SEED_TAIL: { return CircQueue_virt_addr(queue, (queue->tail - offset) % queue->length); }
-    default:{ return nullptr; }
-  }
-}
-
-inline void *CircQueue_offs_real(const CircQueue *queue, const uint32_t seed, const uint32_t offset) {
-  switch (seed) {
-    case CIRC_QUEUE_SEED_HEAD: { return CircQueue_real_addr(queue, (queue->head + offset) % queue->length); }
-    case CIRC_QUEUE_SEED_TAIL: { return CircQueue_real_addr(queue, (queue->tail - offset) % queue->length); }
-    default:{ return nullptr; }
-  }
 }
